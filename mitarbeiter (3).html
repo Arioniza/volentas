@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Arbeitsbestätigung — Volentas GmbH</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#f4f7f4;min-height:100vh;}
+.header{background:#1B6B3A;padding:20px 24px 18px;}
+.header h1{color:#fff;font-size:20px;font-weight:500;}
+.header p{color:rgba(255,255,255,0.55);font-size:12px;margin-top:3px;}
+.main{max-width:600px;margin:0 auto;padding:1.25rem;}
+.card{background:#fff;border-radius:12px;padding:1.25rem;margin-bottom:1rem;border:1px solid rgba(165,214,167,0.3);box-shadow:0 2px 12px rgba(27,107,58,0.08);}
+.lbl{font-size:10px;color:#888;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;}
+.val{font-size:15px;color:#1a1a1a;font-weight:500;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;}
+.info{background:#E8F5E9;border-radius:8px;padding:12px 14px;margin-bottom:1rem;font-size:13px;color:#1B6B3A;line-height:1.6;}
+.sig-wrap{border:2px dashed #A5D6A7;border-radius:10px;background:#f9fdf9;position:relative;height:180px;overflow:hidden;}
+canvas{display:block;touch-action:none;cursor:crosshair;}
+.sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;color:#A5D6A7;pointer-events:none;}
+.btn{width:100%;padding:14px;border-radius:10px;border:none;font-size:16px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;margin-top:10px;}
+.btn-g{background:#1B6B3A;color:#fff;}
+.btn-r{background:transparent;color:#e53e3e;border:1px solid #fed7d7;font-size:13px;padding:8px;margin-top:8px;}
+.smb{background:transparent;border:2px solid #e0e0e0;border-radius:12px;padding:12px 20px;font-size:28px;cursor:pointer;transition:all .15s;text-align:center;line-height:1;}
+.smb.active{border-color:#1B6B3A;background:#E8F5E9;transform:scale(1.1);}
+input{border:1px solid #c8e6c9;border-radius:8px;padding:10px 13px;font-size:15px;font-family:'DM Sans',sans-serif;color:#1a1a1a;background:#fff;width:100%;margin-bottom:10px;}
+input:focus{outline:none;border-color:#1B6B3A;}
+.field-label{font-size:12px;color:#555;font-weight:500;margin-bottom:4px;display:block;}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Volentas GmbH</h1>
+  <p>Arbeitsbestätigung</p>
+</div>
+<div class="main" id="app">
+  <div style="text-align:center;padding:2rem;color:#666;">Wird geladen...</div>
+</div>
+<script>
+var SU='https://xxqukwlwmdomgftumbal.supabase.co';
+var SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4cXVrd2x3bWRvbWdmdHVtYmFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NzAzNjksImV4cCI6MjA5MDU0NjM2OX0.Fiz9byHCPbhKmp381ILhbXDPGc5LLt0jCLHp8xBb3TU';
+
+var kCv,kCx,kDrw=false,kHas=false;
+var mCv,mCx,mDrw=false,mHas=false;
+var bew=0,tok=null;
+
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function ge(id){return document.getElementById(id);}
+
+async function sbGet(t){
+  try{
+    var r=await fetch(SU+'/rest/v1/bestaetigung?token=eq.'+encodeURIComponent(t)+'&select=*',{headers:{'apikey':SK,'Authorization':'Bearer '+SK}});
+    var d=await r.json();return d[0]||null;
+  }catch(e){return null;}
+}
+
+async function sbSave(t,sigK,sigM,nameK,nameM,b){
+  try{
+    var now=new Date();
+    var dat=now.toLocaleDateString('de-CH')+' '+now.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' Uhr';
+    var r=await fetch(SU+'/rest/v1/bestaetigung?token=eq.'+encodeURIComponent(t),{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK},
+      body:JSON.stringify({unterschrift:sigK,mitarbeiter_unterschrift:sigM,kunde_name:nameK,mitarbeiter_name:nameM,datum:dat,bewertung:b||0})
+    });
+    return r.ok;
+  }catch(e){return false;}
+}
+
+function init(){
+  var t=new URLSearchParams(window.location.search).get('t');
+  if(t){tok=t;load(t);}
+  else{showError('Kein gültiger Link.');}
+}
+
+async function load(t){
+  ge('app').innerHTML='<div style="text-align:center;padding:2rem;color:#666;">Wird geladen...</div>';
+  var d=await sbGet(t);
+  if(!d){ge('app').innerHTML='<div class="card" style="text-align:center;padding:2rem;color:#e53e3e;">Ungültiger Link. Bitte beim Chef nachfragen.</div>';return;}
+  if(d.unterschrift){showOk();return;}
+  showForm(d);
+}
+
+function showForm(d){
+  ge('app').innerHTML=
+    '<div class="card">'
+    +'<div class="info">Bitte Namen eingeben und die Arbeiten mit Unterschrift bestätigen.</div>'
+    +'<div class="grid">'
+    +'<div><div class="lbl">Auftraggeber</div><div class="val">'+esc(d.kunde)+'</div></div>'
+    +'<div><div class="lbl">Rechnungs-Nr.</div><div class="val">'+esc(d.rechnung_id)+'</div></div>'
+    +'</div>'
+    +'<div><div class="lbl">Objekt</div><div class="val">'+esc(d.objekt)+'</div></div>'
+    +'</div>'
+
+    +'<div class="card">'
+    +'<div style="font-size:13px;font-weight:500;color:#1B6B3A;margin-bottom:12px;">Namen eingeben</div>'
+    +'<label class="field-label">Name des Kunden</label>'
+    +'<input type="text" id="kunde-name" placeholder="z.B. Thomas Schaffer" />'
+    +'<label class="field-label">Name des Mitarbeiters</label>'
+    +'<input type="text" id="mitarbeiter-name" placeholder="z.B. Ahmed Mustafa" />'
+    +'</div>'
+
+    +'<div class="card">'
+    +'<div class="lbl" style="margin-bottom:10px;">Wie war unsere Arbeit?</div>'
+    +'<div style="display:flex;justify-content:center;gap:20px;margin-bottom:16px;">'
+    +'<button class="smb" onclick="setBew(1)" id="b1">&#x1F61E;<div style="font-size:11px;margin-top:4px;color:#666;">Schlecht</div></button>'
+    +'<button class="smb" onclick="setBew(2)" id="b2">&#x1F610;<div style="font-size:11px;margin-top:4px;color:#666;">Ok</div></button>'
+    +'<button class="smb" onclick="setBew(3)" id="b3">&#x1F60A;<div style="font-size:11px;margin-top:4px;color:#666;">Sehr gut</div></button>'
+    +'</div>'
+
+    +'<div class="lbl" style="margin-bottom:6px;">Unterschrift Kunde</div>'
+    +'<div class="sig-wrap" id="kw"><canvas id="kc"></canvas><div id="kh" class="sig-hint">&#9998; Kunde unterschreibt hier</div></div>'
+    +'<button class="btn btn-r" onclick="clrK()">Löschen</button>'
+
+    +'<div class="lbl" style="margin-bottom:6px;margin-top:16px;">Unterschrift Mitarbeiter</div>'
+    +'<div class="sig-wrap" id="mw"><canvas id="mc"></canvas><div id="mh" class="sig-hint">&#9998; Mitarbeiter unterschreibt hier</div></div>'
+    +'<button class="btn btn-r" onclick="clrM()">Löschen</button>'
+
+    +'<button class="btn btn-g" id="cb" onclick="sub()">Arbeiten bestätigen &#10003;</button>'
+    +'<p style="font-size:11px;color:#aaa;text-align:center;margin-top:10px;line-height:1.5;">&#128274; Unterschriften werden digital gespeichert. Volentas GmbH, Zürich.</p>'
+    +'</div>';
+  initSig('kc','kw','kh',true);
+  initSig('mc','mw','mh',false);
+}
+
+function showOk(){
+  ge('app').innerHTML='<div class="card" style="text-align:center;padding:3rem 1.5rem;">'
+    +'<div style="width:64px;height:64px;background:#1B6B3A;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">'
+    +'<svg width="32" height="32" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>'
+    +'<h2 style="font-size:22px;color:#14532D;margin-bottom:8px;">Vielen Dank!</h2>'
+    +'<p style="font-size:14px;color:#666;">Die Arbeiten wurden erfolgreich bestätigt.</p>'
+    +'</div>';
+}
+
+function showError(msg){
+  ge('app').innerHTML='<div class="card" style="text-align:center;padding:2rem;color:#e53e3e;">'+msg+'</div>';
+}
+
+function setBew(n){bew=n;[1,2,3].forEach(function(i){var b=ge('b'+i);if(b)b.className='smb'+(i===n?' active':'');});}
+
+function initSig(cvId,wrapId,hintId,isKunde){
+  var cv=ge(cvId);if(!cv)return;
+  var wrap=ge(wrapId);
+  cv.width=wrap.offsetWidth||350;cv.height=180;
+  var cx=cv.getContext('2d');
+  cx.strokeStyle='#1B6B3A';cx.lineWidth=2.5;cx.lineCap='round';cx.lineJoin='round';
+  if(isKunde){kCv=cv;kCx=cx;}else{mCv=cv;mCx=cx;}
+  var drw=false,has=false;
+  function gp(e){var r=cv.getBoundingClientRect(),sx=cv.width/r.width,sy=cv.height/r.height;
+    if(e.touches)return{x:(e.touches[0].clientX-r.left)*sx,y:(e.touches[0].clientY-r.top)*sy};
+    return{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};}
+  cv.onmousedown=cv.ontouchstart=function(e){e.preventDefault();drw=true;var p=gp(e);cx.beginPath();cx.moveTo(p.x,p.y);ge(hintId).style.opacity='0';has=true;if(isKunde)kHas=true;else mHas=true;};
+  cv.onmousemove=cv.ontouchmove=function(e){e.preventDefault();if(!drw)return;var p=gp(e);cx.lineTo(p.x,p.y);cx.stroke();};
+  cv.onmouseup=cv.ontouchend=function(){drw=false;};
+  cv.onmouseleave=function(){drw=false;};
+}
+
+function clrK(){if(kCx){kCx.clearRect(0,0,kCv.width,kCv.height);kHas=false;ge('kh').style.opacity='1';}}
+function clrM(){if(mCx){mCx.clearRect(0,0,mCv.width,mCv.height);mHas=false;ge('mh').style.opacity='1';}}
+
+async function sub(){
+  var nameK=(ge('kunde-name')&&ge('kunde-name').value.trim())||'';
+  var nameM=(ge('mitarbeiter-name')&&ge('mitarbeiter-name').value.trim())||'';
+  if(!nameK){alert('Bitte Name des Kunden eingeben.');return;}
+  if(!nameM){alert('Bitte Name des Mitarbeiters eingeben.');return;}
+  if(!kHas){alert('Bitte Kunde unterschreiben lassen.');return;}
+  if(!mHas){alert('Bitte Mitarbeiter unterschreiben lassen.');return;}
+  var b=ge('cb');b.textContent='Wird gespeichert...';b.disabled=true;
+  var sigK=kCv.toDataURL('image/png');
+  var sigM=mCv.toDataURL('image/png');
+  var ok=await sbSave(tok,sigK,sigM,nameK,nameM,bew);
+  if(ok){showOk();}else{b.textContent='Arbeiten bestätigen';b.disabled=false;alert('Fehler. Bitte nochmals versuchen.');}
+}
+
+init();
+</script>
+</body>
+</html>
