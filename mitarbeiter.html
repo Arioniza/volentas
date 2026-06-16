@@ -98,7 +98,8 @@ function showForm(d){
     +'<div><div class="lbl">Auftraggeber</div><div class="val">'+esc(d.kunde)+'</div></div>'
     +'<div><div class="lbl">Rechnungs-Nr.</div><div class="val">'+esc(d.rechnung_id)+'</div></div>'
     +'</div>'
-    +'<div><div class="lbl">Objekt</div><div class="val">'+esc(d.objekt)+'</div></div>'
+    +'<div><div class="lbl">Objekt</div><div class="val">'+esc((d.objekt||'').split(' · ')[0])+'</div></div>'
+    +(((d.objekt||'').split(' · ').length>1)?'<div style="margin-top:12px;"><div class="lbl">Ausgeführte Arbeiten</div><div class="val" style="font-weight:400;line-height:1.5;">'+esc((d.objekt||'').split(' · ').slice(1).join(' · '))+'</div></div>':'')
     +'</div>'
 
     +'<div class="card">'
@@ -117,7 +118,7 @@ function showForm(d){
     +'<button class="smb" onclick="setBew(3)" id="b3">&#x1F60A;<div style="font-size:11px;margin-top:4px;color:#666;">Sehr gut</div></button>'
     +'</div>'
 
-    +'<div class="lbl" style="margin-bottom:4px;">Datum der Ausführung</div>'
+    +'<div class="lbl" style="margin-bottom:4px;">Ausführungsdatum</div>'
     +'<input type="date" id="sig-datum" style="margin-bottom:14px;"/>'
     +'<div class="lbl" style="margin-bottom:6px;">Unterschrift Kunde</div>'
     +'<div id="kunde-name-display" style="font-size:15px;font-weight:500;color:#1a1a1a;margin-bottom:6px;"></div>'
