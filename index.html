@@ -1006,10 +1006,11 @@ async function rSendBestaetigung(id){
   var r=RR.find(function(x){return x.id===id;});
   if(!r) return;
   var token=genToken();
+  var _lr=(r.pos&&r.pos[0]&&r.pos[0].desc)||r.leistung||'';
   var ok=await supaInsert({
     rechnung_id: r.id,
     kunde: r.kunde,
-    objekt: r.objekt,
+    objekt: r.objekt + (_lr ? ' · '+_lr : ''),
     token: token,
     datum: ''
   });
@@ -1062,9 +1063,11 @@ function bPdf(id){
     t('RECHNUNGS-NR.',ml,y,8,LT); t('DATUM',col2,y,8,LT);
     t(d.rechnung_id||'',ml,y+7,12,G,'left',true); t(d.datum||'',col2,y+7,10,DK);
     y+=20;
+    var _pp=(d.objekt||'').split(' · '); var _ort=_pp[0]; var _arb=_pp.slice(1).join(' · ');
     t('AUFTRAGGEBER',ml,y,8,LT); t('OBJEKT',col2,y,8,LT);
-    t(d.kunde||'',ml,y+7,11,DK,'left',true); t(d.objekt||'',col2,y+7,11,DK,'left',true);
+    t(d.kunde||'',ml,y+7,11,DK,'left',true); t(_ort,col2,y+7,11,DK,'left',true);
     y+=18;
+    if(_arb){ t('AUSGEFÜHRTE ARBEITEN',ml,y,8,LT); t(_arb,ml,y+7,10,DK,'left',true); y+=16; }
     if(d.kunde_name||d.mitarbeiter_name){
       t('NAME KUNDE',ml,y,8,LT); t('NAME MITARBEITER',col2,y,8,LT);
       t(d.kunde_name||'—',ml,y+7,10,DK); t(d.mitarbeiter_name||'—',col2,y+7,10,DK);
@@ -1099,7 +1102,7 @@ function bPdf(id){
     fill(0,H-12,W,12,G);
     t('Volentas GmbH | Leimbachstrasse 215 | 8041 Zürich | Tel. 044 543 58 86',W/2,H-5,7,[200,230,210],'center');
     pdf.save('Arbeitsbestaetigung_'+( d.rechnung_id||d.id)+'.pdf');
-  });
+  }).catch(function(e){ alert('Download-Fehler: '+(e&&e.message?e.message:e)); });
 }
 
 async function bLoeschen(id){
@@ -1118,10 +1121,11 @@ async function oSendBestaetigung(){
   var o=OO.find(function(x){return x.id===id;});
   if(!o) return;
   var token=genToken();
+  var _lo=(o.pos&&o.pos[0]&&o.pos[0].desc)||o.leistung||'';
   var ok=await supaInsert({
     rechnung_id: o.id,
     kunde: o.kunde,
-    objekt: o.objekt,
+    objekt: o.objekt + (_lo ? ' · '+_lo : ''),
     token: token,
     datum: ''
   });
