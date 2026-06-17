@@ -470,11 +470,25 @@ var SUPA_URL = 'https://xxqukwlwmdomgftumbal.supabase.co';
 var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh4cXVrd2x3bWRvbWdmdHVtYmFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5NzAzNjksImV4cCI6MjA5MDU0NjM2OX0.Fiz9byHCPbhKmp381ILhbXDPGc5LLt0jCLHp8xBb3TU';
 var SB = atob('aHR0cHM6Ly94eHF1a3dsd21kb21nZnR1bWJhbC5zdXBhYmFzZS5jbw==');
 
+// ============================================================
+// LOGIN / AUTH
+// ============================================================
+var BEARER = SUPA_KEY;
+var AUTH = null;
+try { AUTH = JSON.parse(localStorage.getItem('vol_auth')||'null'); } catch(e){ AUTH = null; }
+if (AUTH && AUTH.access_token) BEARER = AUTH.access_token;
+function setAuth(a){ AUTH=a; if(a&&a.access_token){BEARER=a.access_token;localStorage.setItem('vol_auth',JSON.stringify(a));} else {BEARER=SUPA_KEY;localStorage.removeItem('vol_auth');} }
+async function doLogin(email,pw){ try{ var r=await fetch(SB+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY},body:JSON.stringify({email:email,password:pw})}); if(!r.ok) return false; var d=await r.json(); d.expires_at=Date.now()+((d.expires_in||3600)*1000); setAuth(d); return true; }catch(e){return false;} }
+async function refreshAuth(){ if(!AUTH||!AUTH.refresh_token) return false; try{ var r=await fetch(SB+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY},body:JSON.stringify({refresh_token:AUTH.refresh_token})}); if(!r.ok){setAuth(null);return false;} var d=await r.json(); d.expires_at=Date.now()+((d.expires_in||3600)*1000); setAuth(d); return true; }catch(e){return false;} }
+function logout(){ setAuth(null); location.reload(); }
+function anonHeaders(extra){ var h={'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer ' + SUPA_KEY}; if(extra) Object.assign(h,extra); return h; }
+
+
 function supaHeaders(extra){
   var h={
     'Content-Type':'application/json',
     'apikey': SUPA_KEY,
-    'Authorization': 'Bearer '+SUPA_KEY,
+    'Authorization': 'Bearer '+BEARER,
     'x-client-info': 'supabase-js/2.0'
   };
   if(extra) Object.assign(h,extra);
@@ -540,7 +554,7 @@ var OO = [];
 async function loadRechnungen(){
   try{
     var r=await fetch(SB+'/rest/v1/rechnungen?select=*&order=created_at.desc&limit=500',{
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER}
     });
     var data=await r.json();
     if(Array.isArray(data)) RR=data;
@@ -550,7 +564,7 @@ async function loadRechnungen(){
 async function loadOfferten(){
   try{
     var r=await fetch(SB+'/rest/v1/offerten?select=*&order=created_at.desc&limit=500',{
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER}
     });
     var data=await r.json();
     if(Array.isArray(data)) OO=data;
@@ -564,7 +578,7 @@ async function sR(){
     try{
       await fetch(SB+'/rest/v1/rechnungen',{
         method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},
+        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER,'Prefer':'resolution=merge-duplicates'},
         body:JSON.stringify(latest)
       });
     }catch(e){}
@@ -578,7 +592,7 @@ async function sO(){
     try{
       await fetch(SB+'/rest/v1/offerten',{
         method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},
+        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER,'Prefer':'resolution=merge-duplicates'},
         body:JSON.stringify(latest)
       });
     }catch(e){}
@@ -590,7 +604,7 @@ async function deleteR(id){
   try{
     await fetch(SB+'/rest/v1/rechnungen?id=eq.'+id,{
       method:'DELETE',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER}
     });
   }catch(e){}
 }
@@ -599,7 +613,7 @@ async function deleteO(id){
   try{
     await fetch(SB+'/rest/v1/offerten?id=eq.'+id,{
       method:'DELETE',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER}
     });
   }catch(e){}
 }
@@ -718,7 +732,7 @@ function rErstellen(){
   // Save to Supabase
   fetch(SB+'/rest/v1/rechnungen',{
     method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},
+    headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER,'Prefer':'resolution=merge-duplicates'},
     body:JSON.stringify(rec)
   }).catch(function(){});
   localStorage.setItem('vol_r',JSON.stringify(RR));
@@ -821,7 +835,7 @@ function oErstellen(){
   // Save to Supabase
   fetch(SB+'/rest/v1/offerten',{
     method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},
+    headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER,'Prefer':'resolution=merge-duplicates'},
     body:JSON.stringify(off)
   }).catch(function(){});
   localStorage.setItem('vol_o',JSON.stringify(OO));
@@ -1039,7 +1053,7 @@ function bPdf(id){
   var jsPDF=window.jspdf.jsPDF;
   // Find the row data from the stored bestaetigungen
   fetch(SB+'/rest/v1/bestaetigung?id=eq.'+id+'&select=*',{
-    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER}
   }).then(function(r){return r.json();}).then(function(rows){
     if(!rows||!rows[0]) return;
     var d=rows[0];
@@ -1110,7 +1124,7 @@ async function bLoeschen(id){
   try{
     await fetch(SB+'/rest/v1/bestaetigung?id=eq.'+id,{
       method:'DELETE',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER}
     });
     bInit();
   }catch(e){alert('Fehler beim Löschen.');}
@@ -1158,7 +1172,7 @@ async function bInit(){
   if(app) app.innerHTML='<div style="text-align:center;padding:2rem;color:var(--tl)">Wird geladen...</div>';
   try{
     var res=await fetch(SB+'/rest/v1/bestaetigung?select=*&order=created_at.desc',{
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER}
     });
     var rows=await res.json();
     if(!rows.length){
@@ -1458,27 +1472,27 @@ async function migrateAndLoad(){
   var localO=JSON.parse(localStorage.getItem('vol_o')||'[]');
   
   // Upload local rechnungen to Supabase if any
-  if(localR.length>0 && !localStorage.getItem('vol_r_migrated')){
+  if(localR.length>0 && !localStorage.getItem('vol_r_migrated2')){
     try{
       await fetch(SB+'/rest/v1/rechnungen',{
         method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},
+        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER,'Prefer':'resolution=merge-duplicates'},
         body:JSON.stringify(localR)
       });
-      localStorage.setItem('vol_r_migrated','1');
+      localStorage.setItem('vol_r_migrated2','1');
       console.log('Rechnungen migriert:', localR.length);
     }catch(e){ console.log('Migration error R:', e); }
   }
   
   // Upload local offerten to Supabase if any
-  if(localO.length>0 && !localStorage.getItem('vol_o_migrated')){
+  if(localO.length>0 && !localStorage.getItem('vol_o_migrated2')){
     try{
       await fetch(SB+'/rest/v1/offerten',{
         method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'resolution=merge-duplicates'},
+        headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+BEARER,'Prefer':'resolution=merge-duplicates'},
         body:JSON.stringify(localO)
       });
-      localStorage.setItem('vol_o_migrated','1');
+      localStorage.setItem('vol_o_migrated2','1');
       console.log('Offerten migriert:', localO.length);
     }catch(e){ console.log('Migration error O:', e); }
   }
@@ -1488,7 +1502,7 @@ async function migrateAndLoad(){
   dRender();
   kFillDropdowns();
 }
-migrateAndLoad();
+// migrateAndLoad() wird erst nach Login ueber boot() gestartet
 
 // ============================================================
 // SIGN PAGE
@@ -1504,11 +1518,13 @@ function setBewertung(n){
 
 async function fetchSignData(token){
   try{
-    var res=await fetch(SB+'/rest/v1/bestaetigung?token=eq.'+encodeURIComponent(token)+'&select=*',{
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    var res=await fetch(SB+'/rest/v1/rpc/get_bestaetigung_by_token',{
+      method:'POST', headers:anonHeaders(),
+      body:JSON.stringify({p_token:token})
     });
+    if(!res.ok) return null;
     var data=await res.json();
-    return data[0]||null;
+    return data||null;
   }catch(e){return null;}
 }
 
@@ -1516,12 +1532,14 @@ async function saveSignature(token,sig,bew){
   try{
     var now=new Date();
     var datum=now.toLocaleDateString('de-CH')+' '+now.toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'})+' Uhr';
-    var res=await fetch(SB+'/rest/v1/bestaetigung?token=eq.'+encodeURIComponent(token),{
-      method:'PATCH',
-      headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
-      body:JSON.stringify({unterschrift:sig,datum:datum,bewertung:bew||0})
+    var res=await fetch(SB+'/rest/v1/rpc/sign_bestaetigung',{
+      method:'POST',
+      headers:anonHeaders(),
+      body:JSON.stringify({p_token:token,p_unterschrift:sig,p_mitarbeiter_unterschrift:null,p_kunde_name:null,p_mitarbeiter_name:null,p_datum:datum,p_bewertung:bew||0})
     });
-    return res.ok;
+    if(!res.ok) return false;
+    var ok=await res.json();
+    return ok===true;
   }catch(e){return false;}
 }
 
@@ -1608,12 +1626,76 @@ function checkSignPage(){
     renderSignForm(data);
   });
 }
-checkSignPage();
+// ============================================================
+// BOOT / LOGIN-GATE
+// ============================================================
+function showLogin(msg){
+  var nav=document.querySelector('.topnav'); if(nav) nav.style.display='none';
+  var main=document.querySelector('.main'); if(main) main.style.display='none';
+  var ov=document.getElementById('login-overlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='login-overlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#f4f7f4;display:flex;align-items:center;justify-content:center;padding:1.25rem;';
+    ov.innerHTML=
+      '<div style="background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(27,107,58,0.15);padding:2rem;max-width:380px;width:100%;">'
+      +'<div style="font-family:\'Playfair Display\',serif;font-size:24px;color:#1B6B3A;text-align:center;">Volentas GmbH</div>'
+      +'<div style="font-size:13px;color:#718096;text-align:center;margin-bottom:1.5rem;">Bitte anmelden</div>'
+      +'<label style="font-size:12px;color:#4a5568;font-weight:500;">E-Mail</label>'
+      +'<input id="login-email" type="email" autocomplete="username" style="width:100%;border:1px solid #c8e6c9;border-radius:8px;padding:11px 13px;font-size:15px;margin:5px 0 12px;font-family:inherit;box-sizing:border-box;">'
+      +'<label style="font-size:12px;color:#4a5568;font-weight:500;">Passwort</label>'
+      +'<input id="login-pw" type="password" autocomplete="current-password" style="width:100%;border:1px solid #c8e6c9;border-radius:8px;padding:11px 13px;font-size:15px;margin:5px 0 16px;font-family:inherit;box-sizing:border-box;">'
+      +'<button id="login-btn" style="width:100%;padding:13px;border-radius:9px;border:none;background:#1B6B3A;color:#fff;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;">Anmelden</button>'
+      +'<div id="login-err" style="color:#e53e3e;font-size:13px;text-align:center;margin-top:10px;min-height:18px;"></div>'
+      +'</div>';
+    document.body.appendChild(ov);
+    var submit=async function(){
+      var btn=document.getElementById('login-btn');
+      var em=(document.getElementById('login-email').value||'').trim();
+      var pw=document.getElementById('login-pw').value||'';
+      document.getElementById('login-err').textContent='';
+      btn.disabled=true; btn.textContent='Anmelden…';
+      var ok=await doLogin(em,pw);
+      if(ok){
+        ov.remove();
+        if(nav) nav.style.display='';
+        if(main) main.style.display='';
+        startAdmin();
+      } else {
+        btn.disabled=false; btn.textContent='Anmelden';
+        document.getElementById('login-err').textContent='E-Mail oder Passwort falsch.';
+      }
+    };
+    document.getElementById('login-btn').onclick=submit;
+    document.getElementById('login-pw').addEventListener('keydown',function(e){ if(e.key==='Enter') submit(); });
+    document.getElementById('login-email').addEventListener('keydown',function(e){ if(e.key==='Enter') document.getElementById('login-pw').focus(); });
+  }
+  ov.style.display='flex';
+  if(msg){ var er=document.getElementById('login-err'); if(er) er.textContent=msg; }
+}
+
+async function startAdmin(){
+  await migrateAndLoad();
+  if(window.__refreshTimer) clearInterval(window.__refreshTimer);
+  window.__refreshTimer=setInterval(refreshAuth, 50*60*1000);
+}
+
+async function boot(){
+  var t=new URLSearchParams(window.location.search).get('t');
+  if(t){ checkSignPage(); return; }
+  if(AUTH && AUTH.access_token){
+    if(AUTH.expires_at && Date.now() > (AUTH.expires_at - 60000)){ await refreshAuth(); }
+    if(AUTH && AUTH.access_token){ startAdmin(); return; }
+  }
+  showLogin();
+}
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', boot); } else { boot(); }
 
 </script>
 
+
 <!-- SIGN PAGE -->
-<div id="sign-page">
+<div id="sign-page" style="display:none;">
   <div class="header" style="background:#1B6B3A;padding:20px 24px 18px;">
     <h1 style="color:#fff;font-size:20px;font-weight:500;">Volentas GmbH</h1>
     <p style="color:rgba(255,255,255,0.55);font-size:12px;margin-top:3px;">Arbeitsbestätigung</p>

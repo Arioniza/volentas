@@ -51,8 +51,9 @@ function ge(id){return document.getElementById(id);}
 
 async function sbGet(t){
   try{
-    var r=await fetch(SU+'/rest/v1/bestaetigung?token=eq.'+encodeURIComponent(t)+'&select=*',{headers:{'apikey':SK,'Authorization':'Bearer '+SK}});
-    var d=await r.json();return d[0]||null;
+    var r=await fetch(SU+'/rest/v1/rpc/get_bestaetigung_by_token',{method:'POST',headers:{'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK},body:JSON.stringify({p_token:t})});
+    if(!r.ok) return null;
+    var d=await r.json();return d||null;
   }catch(e){return null;}
 }
 
@@ -67,12 +68,13 @@ async function sbSave(t,sigK,sigM,nameK,nameM,b){
       var now=new Date();
       dat=String(now.getDate()).padStart(2,'0')+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+now.getFullYear();
     }
-    var r=await fetch(SU+'/rest/v1/bestaetigung?token=eq.'+encodeURIComponent(t),{
-      method:'PATCH',
+    var r=await fetch(SU+'/rest/v1/rpc/sign_bestaetigung',{
+      method:'POST',
       headers:{'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK},
-      body:JSON.stringify({unterschrift:sigK,mitarbeiter_unterschrift:sigM,kunde_name:nameK,mitarbeiter_name:nameM,datum:dat,bewertung:b||0})
+      body:JSON.stringify({p_token:t,p_unterschrift:sigK,p_mitarbeiter_unterschrift:sigM,p_kunde_name:nameK,p_mitarbeiter_name:nameM,p_datum:dat,p_bewertung:b||0})
     });
-    return r.ok;
+    if(!r.ok) return false;
+    var ok=await r.json(); return ok===true;
   }catch(e){return false;}
 }
 
