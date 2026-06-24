@@ -120,6 +120,10 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     Offerte
   </button>
+  <button class="nb" id="nb-anfragen" onclick="goTo('anfragen',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+    Anfragen<span id="anfrage-count" style="display:none;margin-left:6px;background:#FCD34D;color:#92400E;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600;"></span>
+  </button>
   <button class="nb" onclick="goTo('kunden',this)">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
     Kunden
@@ -145,10 +149,13 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
       Neue Rechnung
     </button>
   </div>
-  <div class="sg">
+  <div class="sg" style="position:relative;">
+    <button onclick="toggleUmsatz()" id="umsatz-eye" title="Zahlen ein-/ausblenden" style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.15);border:none;cursor:pointer;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;color:#fff;z-index:2;">
+      <svg id="eye-icon" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
     <div class="sc"><div class="sl">Offene Rechnungen</div><div class="sv" id="d-offen">0</div></div>
-    <div class="sc"><div class="sl">Monatsumsatz (CHF)</div><div class="sv" id="d-monat">0</div></div>
-    <div class="sc"><div class="sl">Ausstehend (CHF)</div><div class="sv" id="d-ausst">0</div></div>
+    <div class="sc"><div class="sl">Monatsumsatz (CHF)</div><div class="sv umsatz-val" id="d-monat">0</div></div>
+    <div class="sc"><div class="sl">Ausstehend (CHF)</div><div class="sv umsatz-val" id="d-ausst">0</div></div>
   </div>
   <div class="card">
     <div class="ct">Rechnungen</div>
@@ -404,40 +411,20 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
   </div>
 </div>
 
+<!-- ANFRAGEN -->
+<div id="anfragen" class="pg">
+  <div class="ph"><div class="pt">🔔 Neue Anfragen</div></div>
+  <div class="card">
+    <div class="ct">Eingegangene Anfragen (aus E-Mail / PDF)</div>
+    <div id="a-list"></div>
+  </div>
+</div>
+
 <!-- ARBEITSBESTÄTIGUNG -->
 <div id="bestaetigung" class="pg">
   <div class="ph"><div class="pt">Arbeitsbestätigung</div></div>
   <div id="b-list"></div>
-  <div class="card">
-    <div class="ct">Rechnung auswählen</div>
-    <div class="fgrp" style="max-width:480px;margin-bottom:1.5rem;">
-      <label>Offene Rechnung</label>
-      <select id="b-sel" onchange="bLoad()"><option value="">— Rechnung wählen —</option></select>
-    </div>
-    <div id="b-details" style="display:none;">
-      <div class="dg" id="b-info"></div>
-      <div class="sep"></div>
-      <div style="font-size:14px;font-weight:500;color:var(--td);margin-bottom:6px;">Unterschrift des Kunden</div>
-      <div style="font-size:13px;color:var(--tl);margin-bottom:12px;">Bitte hier unterschreiben zur Bestätigung der ausgeführten Arbeiten</div>
-      <div class="sw" style="height:200px;">
-        <canvas id="b-canvas" style="display:block;cursor:crosshair;touch-action:none;width:100%;height:200px;"></canvas>
-        <div class="sh2" id="b-hint">✍ Hier unterschreiben</div>
-      </div>
-      <div style="margin-top:8px;"><button class="btd" onclick="bClear()">Unterschrift löschen</button></div>
-      <div class="br"><button class="btn btp" onclick="bBestaetigen()">✓ Bestätigung sichern &amp; PDF herunterladen</button></div>
-    </div>
-    <div id="b-success" style="display:none;">
-      <div class="sbox">
-        <div class="sico"><svg width="26" height="26" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
-        <div class="stit">Arbeitsbestaetigung gespeichert!</div>
-        <div class="ssub" id="b-stext"></div>
-        <div style="display:flex;gap:10px;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
-          <button class="btn btpdf" onclick="bPdfNochmal()">⬇ PDF nochmals herunterladen</button>
-          <button class="btn bto" onclick="bReset()">Weitere Bestätigung</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Alte "Rechnung auswählen"-Karte entfernt: Unterschriften laufen jetzt über den Link. -->
 </div>
 
 <!-- EINSTELLUNGEN -->
@@ -637,17 +624,59 @@ function goTo(id, btn) {
   if(id==='dashboard') dRender();
   if(id==='bestaetigung') bInit();
   if(id==='offerte') oBackToList();
+  if(id==='anfragen') aRender();
   if(id==='kunden'){ kRenderList(); show('k-list'); hide('k-form'); }
 }
 
 // ============================================================
 // DASHBOARD
 // ============================================================
+var umsatzVisible=true;
+function toggleUmsatz(){
+  umsatzVisible=!umsatzVisible;
+  document.querySelectorAll('.umsatz-val').forEach(function(v){ v.textContent=umsatzVisible?(v.dataset.val||'0'):'••••••'; });
+  var ic=document.getElementById('eye-icon');
+  if(ic){ ic.innerHTML=umsatzVisible
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'; }
+}
+function updateAnfrageBadge(){
+  var n=OO.filter(function(o){return o.status==='anfrage';}).length;
+  var b=document.getElementById('anfrage-count');
+  if(b){ if(n>0){ b.textContent=n; b.style.display='inline-block'; } else { b.style.display='none'; } }
+}
+function aRender(){
+  updateAnfrageBadge();
+  var anf=OO.filter(function(o){return o.status==='anfrage';});
+  var box=document.getElementById('a-list');
+  if(!box) return;
+  if(anf.length===0){ box.innerHTML='<div style="text-align:center;color:var(--tl);padding:2rem">Keine neuen Anfragen.</div>'; return; }
+  var h='<div class="ovf"><table class="tbl"><thead><tr><th>Eingang</th><th>Kunde</th><th>Objekt</th><th>Ausgeführte Arbeiten</th><th></th></tr></thead><tbody>';
+  anf.forEach(function(o){
+    var leist=(o.pos&&o.pos[0]&&o.pos[0].desc)||'';
+    h+='<tr>'
+      +'<td style="color:var(--tl)">'+escH(o.datum||'')+'</td>'
+      +'<td style="font-weight:500">'+escH(o.kunde||'')+'</td>'
+      +'<td style="color:var(--tm);font-size:13px">'+escH(o.objekt||'')+'</td>'
+      +'<td style="color:var(--tm);font-size:13px">'+escH(leist)+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn btp" style="padding:6px 12px;font-size:13px" onclick="oAnfrageBearbeiten(\''+o.id+'\')">→ Offerte erstellen</button> <button class="btd" onclick="aLoeschen(\''+o.id+'\')" title="Löschen">✕</button></td>'
+      +'</tr>';
+  });
+  h+='</tbody></table></div>';
+  box.innerHTML=h;
+}
+function aLoeschen(id){
+  if(!confirm('Diese Anfrage wirklich löschen?')) return;
+  OO=OO.filter(function(x){return x.id!==id;});
+  deleteO(id); localStorage.setItem('vol_o',JSON.stringify(OO)); aRender(); dRender();
+}
 function dRender(){
   var offen=RR.filter(function(r){ return r.status==='offen'; });
   el('d-offen').textContent=offen.length;
-  el('d-monat').textContent=RR.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
-  el('d-ausst').textContent=offen.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
+  var mVal=RR.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
+  var aVal=offen.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
+  el('d-monat').dataset.val=mVal; el('d-monat').textContent=umsatzVisible?mVal:'••••••';
+  el('d-ausst').dataset.val=aVal; el('d-ausst').textContent=umsatzVisible?aVal:'••••••';
   var rsmap={offen:'bo',bestaetigt:'bb2',bezahlt:'bp'};
   var rlbl={offen:'Offen',bestaetigt:'Bestätigt',bezahlt:'Bezahlt'};
   var rrows='';
@@ -667,11 +696,17 @@ function dRender(){
       +'</tr>';
   }
   el('d-rlist').innerHTML=rrows;
-  var osmap={entwurf:'be',gesendet:'bg2',akzeptiert:'bak',abgelehnt:'bal'};
-  var olbl={entwurf:'Entwurf',gesendet:'Gesendet',akzeptiert:'Akzeptiert',abgelehnt:'Abgelehnt'};
+  // Hinweis-Banner: neue Anfragen
+  var _anf=OO.filter(function(o){return o.status==='anfrage';});
+  var _ban=document.getElementById('anfrage-banner');
+  if(!_ban){ _ban=document.createElement('div'); _ban.id='anfrage-banner'; var _dash=document.getElementById('dashboard'); if(_dash) _dash.insertBefore(_ban,_dash.firstChild); }
+  if(_ban){ if(_anf.length){ _ban.style.cssText='background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:13px 16px;margin-bottom:1.25rem;color:#92400E;font-weight:500;cursor:pointer;font-size:15px;'; _ban.innerHTML='🔔 '+_anf.length+' neue Anfrage'+(_anf.length>1?'n':'')+' — hier prüfen →'; _ban.onclick=function(){ goTo('anfragen',document.getElementById('nb-anfragen')); }; } else { _ban.style.display='none'; } }
+  var osmap={entwurf:'be',gesendet:'bg2',akzeptiert:'bak',abgelehnt:'bal',anfrage:'bo'};
+  var olbl={entwurf:'Entwurf',gesendet:'Gesendet',akzeptiert:'Akzeptiert',abgelehnt:'Abgelehnt',anfrage:'🔔 Anfrage'};
   var orows='';
   for(var oi=0;oi<OO.length;oi++){
     var o=OO[oi];
+    if(o.status==='anfrage') continue;
     orows+='<tr>'
       +'<td class="inr" style="cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+escH(o.id)+'</td>'
       +'<td style="cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+escH(o.kunde)+'</td>'
@@ -684,6 +719,7 @@ function dRender(){
       +'</tr>';
   }
   el('d-olist').innerHTML=orows;
+  updateAnfrageBadge();
 }
 
 // ============================================================
@@ -759,7 +795,9 @@ function oBetragUpdate(){
 function oCalc(){ return oBetragUpdate(); }
 function oNr(){ var d=new Date(); return 'OF-'+(d.getFullYear().toString().slice(2))+(String(d.getMonth()+1).padStart(2,'0'))+(10000+OO.length+1).toString().slice(1); }
 
+var anfrageQuelle=null;
 function oShowForm(){
+  anfrageQuelle=null;
   hide('o-list'); show('o-form'); hide('o-detail');
   ['o-kunde','o-kontakt','o-strasse','o-plzort','o-objekt','o-email','o-bemerk','o-leistung','o-betrag'].forEach(function(id){el(id).value='';});
   el('o-datum').value=td();
@@ -769,17 +807,35 @@ function oShowForm(){
 }
 function oHideForm(){ show('o-list'); hide('o-form'); hide('o-detail'); oRL(); }
 function oBackToList(){ show('o-list'); hide('o-form'); hide('o-detail'); oRL(); }
+function oAnfrageBearbeiten(id){
+  var o=OO.find(function(x){return x.id===id;}); if(!o) return;
+  anfrageQuelle=id;
+  document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('active');});
+  document.querySelectorAll('.nb').forEach(function(nb){nb.classList.remove('active');});
+  var _op=document.getElementById('offerte'); if(_op) _op.classList.add('active');
+  var _ob=document.querySelectorAll('.nb')[2]; if(_ob) _ob.classList.add('active');
+  hide('o-list'); show('o-form'); hide('o-detail');
+  el('o-kunde').value=o.kunde||''; el('o-kontakt').value=o.kontakt||'';
+  el('o-strasse').value=o.strasse||''; el('o-plzort').value=o.plzort||'';
+  el('o-objekt').value=o.objekt||''; el('o-email').value=o.email||'';
+  el('o-leistung').value=(o.pos&&o.pos[0]&&o.pos[0].desc)||'';
+  el('o-bemerk').value=o.bemerk||'';
+  el('o-betrag').value=''; el('o-datum').value=td(); el('o-gueltig').value='';
+  el('o-pvw').style.display='none'; oBetragUpdate();
+  window.scrollTo(0,0);
+}
 
 function oRL(){
-  var osmap={entwurf:'be',gesendet:'bg2',akzeptiert:'bak',abgelehnt:'bal'};
-  var olbl={entwurf:'Entwurf',gesendet:'Gesendet',akzeptiert:'Akzeptiert',abgelehnt:'Abgelehnt'};
-  if(OO.length===0){
+  var osmap={entwurf:'be',gesendet:'bg2',akzeptiert:'bak',abgelehnt:'bal',anfrage:'bo'};
+  var olbl={entwurf:'Entwurf',gesendet:'Gesendet',akzeptiert:'Akzeptiert',abgelehnt:'Abgelehnt',anfrage:'🔔 Anfrage'};
+  var _olist=OO.filter(function(o){return o.status!=='anfrage';});
+  if(_olist.length===0){
     el('o-tbl').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--tl);padding:2rem">Noch keine Offerten vorhanden</td></tr>';
     return;
   }
   var rows='';
-  for(var i=0;i<OO.length;i++){
-    var o=OO[i];
+  for(var i=0;i<_olist.length;i++){
+    var o=_olist[i];
     var sid=o.id;
     var cls=osmap[o.status]||'be';
     var lbl=olbl[o.status]||o.status;
@@ -839,6 +895,7 @@ function oErstellen(){
     body:JSON.stringify(off)
   }).catch(function(){});
   localStorage.setItem('vol_o',JSON.stringify(OO));
+  if(anfrageQuelle){ var _aq=anfrageQuelle; anfrageQuelle=null; OO=OO.filter(function(x){return x.id!==_aq;}); deleteO(_aq); localStorage.setItem('vol_o',JSON.stringify(OO)); updateAnfrageBadge(); }
   pdfDoc(off,true,null);
   oHideForm();
 }
@@ -846,7 +903,8 @@ function oDetail(id){
   curOId=id; var o=OO.find(function(x){return x.id===id;});
   hide('o-list'); hide('o-form'); show('o-detail');
   var rows=(o.pos||[]).map(function(p){return '<tr><td style="font-size:15px;padding:12px 0;color:#1a1a1a;line-height:1.6;">'+escH(p.desc)+'</td><td style="font-size:15px;font-weight:500;text-align:right;padding:12px 0;white-space:nowrap;">'+chf(p.betrag)+'</td></tr>';}).join('');
-  el('o-detail-content').innerHTML=pvwH('Offerte '+o.id,o.kunde,o.kontakt,o.strasse,o.plzort,o.objekt,
+  var head=(o.status==='anfrage')?'<div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:14px 16px;margin-bottom:1rem;"><div style="color:#92400E;font-weight:500;margin-bottom:8px;">🔔 Neue Anfrage — Preis noch offen</div><button class="btn btp" onclick="oAnfrageBearbeiten(\''+o.id+'\')">→ In Offerte umwandeln &amp; Preis setzen</button></div>':'';
+  el('o-detail-content').innerHTML=head+pvwH('Offerte '+o.id,o.kunde,o.kontakt,o.strasse,o.plzort,o.objekt,
     o.datum,o.ausf||'—',o.gueltig,o.bemerk,rows,o.sub,o.sub*0.081,o.tot,'Offerte gültig bis '+o.gueltig);
 }
 function oPdfDetail(){ var o=OO.find(function(x){return x.id===curOId;}); if(o) pdfDoc(o,true,null); }
