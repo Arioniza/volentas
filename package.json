@@ -1,0 +1,16 @@
+{
+  "name": "volentas-anfragen-robot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Liest eingehende Reinigungs-Anfragen (PDF) per IMAP, lässt Claude die Felder auslesen und legt automatisch einen Anfrage-Entwurf in Supabase an.",
+  "scripts": {
+    "start": "node anfragen-robot.mjs",
+    "test-brain": "node test-extract.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.70.0",
+    "imapflow": "^1.0.196",
+    "mailparser": "^3.7.4"
+  }
+}
