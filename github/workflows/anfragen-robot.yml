@@ -1,0 +1,31 @@
+name: Anfragen-Roboter
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  anfragen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Pakete installieren
+        working-directory: robot
+        run: npm install --no-audit --no-fund
+
+      - name: Postfach prüfen und Anfragen anlegen
+        working-directory: robot
+        env:
+          MAIL_USER: nuri.izairi@volentas.ch
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node anfragen-robot.mjs
