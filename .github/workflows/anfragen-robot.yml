@@ -18,11 +18,9 @@ jobs:
           node-version: "20"
 
       - name: Pakete installieren
-        working-directory: robot
         run: npm install --no-audit --no-fund
 
       - name: Postfach prüfen und Anfragen anlegen
-        working-directory: robot
         env:
           MAIL_USER: nuri.izairi@volentas.ch
           MAIL_PASS: ${{ secrets.MAIL_PASS }}
