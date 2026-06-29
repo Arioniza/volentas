@@ -741,7 +741,7 @@ function rBetragUpdate(){
   return {sub:sub,mwst:mwst,tot:tot};
 }
 function rCalc(){ return rBetragUpdate(); }
-function rNr(){ var d=new Date(); return (d.getFullYear().toString().slice(2))+(String(d.getMonth()+1).padStart(2,'0'))+(10000+RR.length+1).toString().slice(1); }
+function rNr(){ var d=new Date(); var pre=(d.getFullYear().toString().slice(2))+(String(d.getMonth()+1).padStart(2,'0')); var mx=0; RR.forEach(function(x){ var s=String(x.id||''); if(s.indexOf(pre)===0){ var n=parseInt(s.slice(pre.length),10); if(!isNaN(n)&&n>mx) mx=n; } }); return pre+String(mx+1).padStart(4,'0'); }
 
 function rVorschau(){
   var w=el('r-pvw');
@@ -798,7 +798,7 @@ function oBetragUpdate(){
   return {sub:sub,mwst:mwst,tot:tot};
 }
 function oCalc(){ return oBetragUpdate(); }
-function oNr(){ var d=new Date(); return 'OF-'+(d.getFullYear().toString().slice(2))+(String(d.getMonth()+1).padStart(2,'0'))+(10000+OO.length+1).toString().slice(1); }
+function oNr(){ var d=new Date(); var pre='OF-'+(d.getFullYear().toString().slice(2))+(String(d.getMonth()+1).padStart(2,'0')); var mx=0; OO.forEach(function(x){ var s=String(x.id||''); if(s.indexOf(pre)===0){ var n=parseInt(s.slice(pre.length),10); if(!isNaN(n)&&n>mx) mx=n; } }); return pre+String(mx+1).padStart(4,'0'); }
 
 var anfrageQuelle=null;
 function oShowForm(){
@@ -1136,8 +1136,11 @@ function bPdf(id){
     y+=20;
     var _pp=(d.objekt||'').split(' · '); var _ort=_pp[0]; var _arb=_pp.slice(1).join(' · ');
     t('AUFTRAGGEBER',ml,y,8,LT); t('OBJEKT',col2,y,8,LT);
-    t(d.kunde||'',ml,y+7,11,DK,'left',true); t(_ort,col2,y+7,11,DK,'left',true);
-    y+=18;
+    t(d.kunde||'',ml,y+7,11,DK,'left',true);
+    pdf.setFontSize(10.5); pdf.setTextColor(DK[0],DK[1],DK[2]); pdf.setFont('helvetica','bold');
+    var _ol=pdf.splitTextToSize(String(_ort||''), W-ml-col2);
+    pdf.text(_ol, col2, y+7);
+    y+=Math.max(18, 8+_ol.length*5);
     if(_arb){ t('AUSGEFÜHRTE ARBEITEN',ml,y,8,LT); t(_arb,ml,y+7,10,DK,'left',true); y+=16; }
     if(d.kunde_name||d.mitarbeiter_name){
       t('NAME KUNDE',ml,y,8,LT); t('NAME MITARBEITER',col2,y,8,LT);
