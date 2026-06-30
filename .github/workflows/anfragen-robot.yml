@@ -22,6 +22,7 @@ jobs:
 
       - name: Postfach prüfen und Anfragen anlegen
         env:
+          NODE_OPTIONS: "--dns-result-order=ipv4first"
           MAIL_USER: nuri.izairi@volentas.ch
           MAIL_PASS: ${{ secrets.MAIL_PASS }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
