@@ -1,9 +1,4 @@
 // anfragen-robot.mjs — der vollständige Roboter.
-// Ablauf: verbindet sich mit dem Postfach (IMAP) -> liest neue Mails im Ordner "Anfragen"
-// -> für jedes PDF lässt Claude die Felder auslesen -> legt einen Anfrage-Entwurf in Supabase an
-// -> markiert die Mail als gelesen (damit sie nicht doppelt verarbeitet wird).
-// Das Roh-PDF wird NIE auf Festplatte gespeichert (Datenschutz / revDSG).
-
 import { ImapFlow } from "imapflow";
 import { simpleParser } from "mailparser";
 import { extractFromPdf, buildAnfrage } from "./extract.mjs";
@@ -31,7 +26,6 @@ function heute() {
   return String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + d.getFullYear();
 }
 
-// Nächste Offerten-Nummer ermitteln (gleiches Schema wie die App: "OF-YYMMxxxx")
 async function naechsteBasisNummer() {
   const d = new Date();
   const pre = "OF-" + d.getFullYear().toString().slice(2) + String(d.getMonth() + 1).padStart(2, "0");
@@ -70,6 +64,7 @@ async function main() {
     host: MAIL_HOST,
     port: parseInt(MAIL_PORT, 10),
     secure: true,
+    servername: process.env.MAIL_SERVERNAME || "imap.ch-dns.net",
     auth: { user: MAIL_USER, pass: MAIL_PASS },
     logger: false,
   });
@@ -81,7 +76,6 @@ async function main() {
     const { pre, max } = await naechsteBasisNummer();
     let zaehler = max;
 
-    // Nur ungelesene Mails verarbeiten
     const uids = await client.search({ seen: false }, { uid: true });
     if (!uids || uids.length === 0) {
       console.log("Keine neuen Anfragen im Ordner '" + MAIL_FOLDER + "'.");
@@ -99,7 +93,7 @@ async function main() {
         (a) => (a.contentType === "application/pdf") || /\.pdf$/i.test(a.filename || "")
       );
       if (pdfs.length === 0) {
-        console.log("  Mail ohne PDF übersprungen: " + (parsed.subject || "(kein Betreff)"));
+        console.log("  Mail ohne PDF uebersprungen: " + (parsed.subject || "(kein Betreff)"));
         await client.messageFlagsAdd(uid, ["\\Seen"], { uid: true });
         continue;
       }
@@ -108,20 +102,19 @@ async function main() {
         try {
           const fields = await extractFromPdf(pdf.content.toString("base64"));
           if (!fields.kunde && !fields.objekt) {
-            console.log("  PDF sah nicht nach Anfrage aus, übersprungen: " + (pdf.filename || ""));
+            console.log("  PDF sah nicht nach Anfrage aus, uebersprungen: " + (pdf.filename || ""));
             continue;
           }
           zaehler += 1;
           const id = pre + String(zaehler).padStart(4, "0");
           await speichern(buildAnfrage(fields, id, heute()));
           neu += 1;
-          console.log("  ✓ Anfrage " + id + " angelegt — " + fields.kunde + " / " + fields.objekt);
+          console.log("  OK Anfrage " + id + " angelegt - " + fields.kunde + " / " + fields.objekt);
         } catch (e) {
           fehler += 1;
-          console.error("  ✗ Fehler bei PDF " + (pdf.filename || "") + ": " + e.message);
+          console.error("  FEHLER bei PDF " + (pdf.filename || "") + ": " + e.message);
         }
       }
-      // Mail als gelesen markieren -> wird beim nächsten Lauf nicht erneut verarbeitet
       await client.messageFlagsAdd(uid, ["\\Seen"], { uid: true });
     }
   } finally {
@@ -132,4 +125,4 @@ async function main() {
   if (fehler > 0) process.exit(1);
 }
 
-main().catch((e) => { console.error("Roboter abgestürzt:", e.message); process.exit(1); });
+main().catch((e) => { console.error("Roboter abgestuerzt:", e.message); process.exit(1); });
