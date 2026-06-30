@@ -8,7 +8,7 @@ const {
   MAIL_PORT = "993",
   MAIL_USER,
   MAIL_PASS,
-  MAIL_FOLDER = "Anfragen",
+  MAIL_FOLDER = "INBOX.Anfragen",
   SUPABASE_URL = "https://xxqukwlwmdomgftumbal.supabase.co",
   SUPABASE_SERVICE_KEY,
 } = process.env;
@@ -71,38 +71,41 @@ async function main() {
 
   await client.connect();
   const lock = await client.getMailboxLock(MAIL_FOLDER);
+  const donePath = MAIL_FOLDER + "." + "Erledigt";
   let neu = 0, fehler = 0;
   try {
+    try { await client.mailboxCreate(donePath); } catch (e) {}
+
+    const count = (client.mailbox && client.mailbox.exists) ? client.mailbox.exists : 0;
+    if (!count) {
+      console.log("Keine Mails im Ordner '" + MAIL_FOLDER + "'.");
+      return;
+    }
+
     const { pre, max } = await naechsteBasisNummer();
     let zaehler = max;
 
-    const uids = await client.search({ seen: false }, { uid: true });
-    if (!uids || uids.length === 0) {
-      console.log("Keine neuen Anfragen im Ordner '" + MAIL_FOLDER + "'.");
-      return;
-    }
-    console.log(uids.length + " neue Mail(s) gefunden.");
+    const uids = [];
+    for await (const msg of client.fetch("1:*", { uid: true })) uids.push(msg.uid);
+    console.log(uids.length + " Mail(s) im Ordner gefunden.");
 
     for (const uid of uids) {
-      const { content } = await client.download(uid, undefined, { uid: true });
-      const chunks = [];
-      for await (const c of content) chunks.push(c);
-      const parsed = await simpleParser(Buffer.concat(chunks));
+      try {
+        const { content } = await client.download(uid, undefined, { uid: true });
+        const chunks = [];
+        for await (const c of content) chunks.push(c);
+        const parsed = await simpleParser(Buffer.concat(chunks));
 
-      const pdfs = (parsed.attachments || []).filter(
-        (a) => (a.contentType === "application/pdf") || /\.pdf$/i.test(a.filename || "")
-      );
-      if (pdfs.length === 0) {
-        console.log("  Mail ohne PDF uebersprungen: " + (parsed.subject || "(kein Betreff)"));
-        await client.messageFlagsAdd(uid, ["\\Seen"], { uid: true });
-        continue;
-      }
-
-      for (const pdf of pdfs) {
-        try {
+        const pdfs = (parsed.attachments || []).filter(
+          (a) => (a.contentType === "application/pdf") || /\.pdf$/i.test(a.filename || "")
+        );
+        if (pdfs.length === 0) {
+          console.log("  Mail ohne PDF: " + (parsed.subject || "(kein Betreff)"));
+        }
+        for (const pdf of pdfs) {
           const fields = await extractFromPdf(pdf.content.toString("base64"));
           if (!fields.kunde && !fields.objekt) {
-            console.log("  PDF sah nicht nach Anfrage aus, uebersprungen: " + (pdf.filename || ""));
+            console.log("  PDF sah nicht nach Anfrage aus: " + (pdf.filename || ""));
             continue;
           }
           zaehler += 1;
@@ -110,12 +113,12 @@ async function main() {
           await speichern(buildAnfrage(fields, id, heute()));
           neu += 1;
           console.log("  OK Anfrage " + id + " angelegt - " + fields.kunde + " / " + fields.objekt);
-        } catch (e) {
-          fehler += 1;
-          console.error("  FEHLER bei PDF " + (pdf.filename || "") + ": " + e.message);
         }
+        await client.messageMove(uid, donePath, { uid: true });
+      } catch (e) {
+        fehler += 1;
+        console.error("  FEHLER bei Mail UID " + uid + ": " + e.message);
       }
-      await client.messageFlagsAdd(uid, ["\\Seen"], { uid: true });
     }
   } finally {
     lock.release();
