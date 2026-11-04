@@ -749,7 +749,13 @@ function aLoeschen(id){
   OO=OO.filter(function(x){return x.id!==id;});
   deleteO(id); localStorage.setItem('vol_o',JSON.stringify(OO)); aRender(); dRender();
 }
+// Neueste zuerst nach Datum (TT.MM.JJJJ), bei gleichem Datum hoehere Nummer zuerst
+function datumKey(d){ var m=String(d||'').match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/); return m ? Number(m[3])*10000+Number(m[2])*100+Number(m[1]) : 0; }
+function sortNachDatum(list){
+  list.sort(function(a,b){ return (datumKey(b.datum)-datumKey(a.datum)) || String(b.id).localeCompare(String(a.id),undefined,{numeric:true}); });
+}
 function dRender(){
+  sortNachDatum(RR);
   var offen=RR.filter(function(r){ return r.status==='offen'; });
   el('d-offen').textContent=offen.length;
   var mVal=RR.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
@@ -902,6 +908,7 @@ function oAnfrageBearbeiten(id){
 function oRL(){
   var osmap={entwurf:'be',gesendet:'bg2',akzeptiert:'bak',abgelehnt:'bal',anfrage:'bo'};
   var olbl={entwurf:'Entwurf',gesendet:'Gesendet',akzeptiert:'Akzeptiert',abgelehnt:'Abgelehnt',anfrage:'🔔 Anfrage'};
+  sortNachDatum(OO);
   var _olist=OO.filter(function(o){return o.status!=='anfrage';});
   if(_olist.length===0){
     el('o-tbl').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--tl);padding:2rem">Noch keine Offerten vorhanden</td></tr>';
