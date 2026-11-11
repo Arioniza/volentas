@@ -1212,7 +1212,14 @@ function bPdf(id){
     var _ol=pdf.splitTextToSize(String(_ort||''), W-ml-col2);
     pdf.text(_ol, col2, y+7);
     y+=Math.max(18, 8+_ol.length*5);
-    if(_arb){ t('AUSGEFÜHRTE ARBEITEN',ml,y,8,LT); t(_arb,ml,y+7,10,DK,'left',true); y+=16; }
+    if(_arb){
+      t('AUSGEFÜHRTE ARBEITEN',ml,y,8,LT);
+      // Langer Text wird auf die Seitenbreite umgebrochen statt rechts abgeschnitten
+      pdf.setFontSize(10); pdf.setTextColor(DK[0],DK[1],DK[2]); pdf.setFont('helvetica','bold');
+      var _al=pdf.splitTextToSize(String(_arb).replace(/\s+/g,' ').trim(), W-ml*2);
+      pdf.text(_al, ml, y+7, {lineHeightFactor:1.45});
+      y+=11+_al.length*5.1;
+    }
     if(d.kunde_name||d.mitarbeiter_name){
       t('NAME KUNDE',ml,y,8,LT); t('NAME MITARBEITER',col2,y,8,LT);
       t(d.kunde_name||'—',ml,y+7,10,DK); t(d.mitarbeiter_name||'—',col2,y+7,10,DK);
