@@ -95,11 +95,29 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
 .smiley-btn:hover{border-color:#A5D6A7;background:#E8F5E9;}
 .smiley-btn.active{border-color:#1B6B3A;background:#E8F5E9;transform:scale(1.1);}
 @media(max-width:700px){
-  .sg{grid-template-columns:1fr;}
+  .sg{grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;}
+  .sc{padding:.75rem;}
+  .sl{font-size:11px;}
+  .sv{font-size:18px;}
+  .card{padding:1rem;}
+  .pt{font-size:21px;}
+  /* Tabellen werden auf dem Handy zu Zeilen-Karten statt seitlich zu scrollen */
+  .tbl thead{display:none;}
+  .tbl,.tbl tbody{display:block;}
+  .tbl tr{display:flex;flex-wrap:wrap;align-items:center;gap:2px 12px;padding:10px 0;border-bottom:1px solid #f0f5f0;}
+  .tbl tr:last-child{border-bottom:none;}
+  .tbl td{border:none!important;padding:2px 0;}
+  .tbl tr:hover td{background:transparent;}
+  .tbl td[colspan]{flex-basis:100%;}
   .fg,.fg3{grid-template-columns:1fr;}
   .dg{grid-template-columns:1fr;}
   .main{padding:1rem;}
-  .nb{font-size:12px;padding:0 10px;}
+  /* Handy: Menue mit Symbol ueber dem Text, damit alles ohne Wischen Platz hat */
+  .topnav{padding:0 .25rem;justify-content:space-around;}
+  .topnav .vlogo{display:none;}
+  .topnav > span{display:none;}
+  .nb{flex-direction:column;justify-content:center;gap:3px;font-size:10.5px;padding:0 6px;}
+  .nb svg{width:18px;height:18px;}
   .br{justify-content:flex-start;}
 }
 </style>
@@ -108,33 +126,33 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
 
 <nav class="topnav">
   <img class="vlogo" alt="Volentas.ch" style="height:30px;width:auto;margin-right:1.5rem;flex-shrink:0;background:#fff;padding:5px 10px;border-radius:8px;">
-  <button class="nb active" onclick="goTo('dashboard',this)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    Dashboard
-  </button>
-  <button class="nb" onclick="goTo('rechnung',this)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-    Neue Rechnung
-  </button>
-  <button class="nb" onclick="goTo('offerte',this)">
+  <button class="nb active" data-pg="dashboard" onclick="goTo('dashboard',this)">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    Offerte
+    Rechnungen
   </button>
-  <button class="nb" id="nb-anfragen" onclick="goTo('anfragen',this)">
+  <button class="nb" data-pg="offerte" onclick="goTo('offerte',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Offerten
+  </button>
+  <button class="nb" data-pg="abos" onclick="goTo('abos',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+    Abos
+  </button>
+  <button class="nb" data-pg="kunden" onclick="goTo('kunden',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    Kunden
+  </button>
+  <button class="nb" data-pg="bestaetigung" onclick="goTo('bestaetigung',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Bestätigungen
+  </button>
+  <button class="nb" data-pg="anfragen" id="nb-anfragen" onclick="goTo('anfragen',this)" style="display:none;">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
     Anfragen<span id="anfrage-count" style="display:none;margin-left:6px;background:#FCD34D;color:#92400E;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:600;"></span>
   </button>
-  <button class="nb" onclick="goTo('kunden',this)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-    Kunden
-  </button>
-  <button class="nb" onclick="goTo('bestaetigung',this)">
-    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    Arbeitsbestaetigung
-  </button>
-  <button class="nb" onclick="goTo('einstellungen',this)">
+  <span style="flex:1;"></span>
+  <button class="nb" data-pg="einstellungen" title="Einstellungen" aria-label="Einstellungen" onclick="goTo('einstellungen',this)">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    Einstellungen
   </button>
 </nav>
 
@@ -143,8 +161,8 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
 <!-- DASHBOARD -->
 <div id="dashboard" class="pg active">
   <div class="ph">
-    <div class="pt">Dashboard</div>
-    <button class="btn btp" onclick="goTo('rechnung',document.querySelectorAll('.nb')[1])">
+    <div class="pt">Rechnungen</div>
+    <button class="btn btp" onclick="rNeu()">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Neue Rechnung
     </button>
@@ -154,11 +172,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
       <svg id="eye-icon" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
     </button>
     <div class="sc"><div class="sl">Offene Rechnungen</div><div class="sv" id="d-offen">0</div></div>
-    <div class="sc"><div class="sl">Monatsumsatz (CHF)</div><div class="sv umsatz-val" id="d-monat">0</div></div>
+    <div class="sc"><div class="sl">Umsatz gesamt (CHF)</div><div class="sv umsatz-val" id="d-monat">0</div></div>
     <div class="sc"><div class="sl">Ausstehend (CHF)</div><div class="sv umsatz-val" id="d-ausst">0</div></div>
   </div>
+  <div id="entwurf-banner" style="display:none;"></div>
   <div class="card">
-    <div class="ct">Rechnungen</div>
+    <div class="ct">Alle Rechnungen</div>
     <table class="tbl">
       <thead><tr><th>Nummer</th><th>Kunde</th><th>Objekt</th><th>Datum</th><th>Betrag</th><th>Status</th><th></th></tr></thead>
       <tbody id="d-rlist"></tbody>
@@ -174,6 +193,8 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
       <div style="padding:2rem;">
         <div id="r-detail-content"></div>
         <div style="display:flex;gap:8px;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e2ece2;flex-wrap:wrap;">
+          <button class="btn btp" id="r-detail-freigeben" onclick="" style="display:none;">✓ Geprüft – freigeben</button>
+          <button class="btn bto" id="r-detail-edit" onclick="">✎ Bearbeiten</button>
           <button class="btn btp" id="r-detail-pdf" onclick="">⬇ PDF herunterladen</button>
           <button class="btn bto" style="color:var(--gm);" id="r-detail-send" onclick="">📤 Bestätigung senden</button>
           <button class="btn bto" style="color:#e53e3e;border-color:#fed7d7;" id="r-detail-del" onclick="">✕ Löschen</button>
@@ -181,13 +202,6 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
         </div>
       </div>
     </div>
-  </div>
-  <div class="card">
-    <div class="ct">Offerten</div>
-    <table class="tbl">
-      <thead><tr><th>Nummer</th><th>Kunde</th><th>Objekt</th><th>Datum</th><th>Betrag</th><th>Gültig bis</th><th>Status</th><th></th></tr></thead>
-      <tbody id="d-olist"></tbody>
-    </table>
   </div>
 </div>
 
@@ -204,27 +218,29 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
     <div class="card">
       <div class="ct">Alle Kunden</div>
       <table class="tbl">
-        <thead><tr><th>Firma</th><th>Kontakt</th><th>Adresse</th><th>Ort</th><th></th></tr></thead>
+        <thead><tr><th>Firma</th><th>Objekt</th><th>Kontakt</th><th>Adresse</th><th></th></tr></thead>
         <tbody id="k-tbl"></tbody>
       </table>
     </div>
   </div>
   <div id="k-form" style="display:none;">
     <div class="ph">
-      <div class="pt">Neuer Kunde</div>
+      <div class="pt" id="k-titel">Neuer Kunde</div>
       <button class="btn bto" onclick="kHideForm()">← Zurück</button>
     </div>
     <div class="card">
       <div class="ct">Kundendaten</div>
       <div class="fg">
-        <div class="fgrp"><label>Firma / Kunde *</label><input id="k-firma" type="text" placeholder="VALORA Food Service Schweiz AG"></div>
+        <div class="fgrp"><label>Firma / Rechnung an *</label><input id="k-firma" type="text" placeholder="Brezelkönig AG"></div>
+        <div class="fgrp"><label>Objekt / Laden</label><input id="k-objekt" type="text" placeholder="Brezelkönig, Bahnhof Hardbrücke, Zürich"></div>
         <div class="fgrp"><label>Kontaktperson</label><input id="k-kontakt" type="text" placeholder="Herr Thomas Schaffer"></div>
         <div class="fgrp"><label>Strasse &amp; Nr.</label><input id="k-strasse" type="text" placeholder="Bahnhofplatz 1"></div>
         <div class="fgrp"><label>PLZ / Ort</label><input id="k-plzort" type="text" placeholder="8953 Dietikon"></div>
-        <div class="fgrp"><label>E-Mail</label><input id="k-email" type="email" placeholder="kunde@firma.ch"></div>
+        <div class="fgrp"><label>Rechnung per Mail an</label><input id="k-email" type="email" placeholder="buchhaltung@firma.ch"></div>
         <div class="fgrp"><label>Telefon</label><input id="k-tel" type="text" placeholder="044 123 45 67"></div>
       </div>
       <div class="br">
+        <button class="btn bto" id="k-del" style="color:#e53e3e;border-color:#fed7d7;display:none;" onclick="kLoeschen(kEditId)">✕ Löschen</button>
         <button class="btn btp" onclick="kSpeichern()">Kunde speichern</button>
       </div>
     </div>
@@ -233,11 +249,11 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
 
 <!-- NEUE RECHNUNG -->
 <div id="rechnung" class="pg">
-  <div class="ph"><div class="pt">Neue Rechnung</div></div>
+  <div class="ph"><div class="pt" id="r-titel">Neue Rechnung</div><button class="btn bto" onclick="goTo('dashboard')">← Zurück</button></div>
   <div class="card">
     <div class="ct">Kundendaten</div>
     <div class="fgrp" style="margin-bottom:1rem;">
-      <label>Gespeicherter Kunde wählen</label>
+      <label>Kunde wählen (füllt alles aus)</label>
       <select id="r-kunde-sel" onchange="rKundeWaehlen()" style="color:var(--gm);font-weight:500;">
         <option value="">— Neuer Kunde / manuell eingeben —</option>
       </select>
@@ -289,12 +305,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
   </div>
   <div class="br">
     <button class="btn bto" onclick="rVorschau()">👁 Vorschau</button>
-    <button class="btn btp" onclick="rErstellen()">Rechnung erstellen &amp; PDF herunterladen →</button>
+    <button class="btn btp" id="r-btn-save" onclick="rErstellen()">Rechnung erstellen &amp; PDF herunterladen →</button>
   </div>
   <div id="r-pvw" style="display:none;" class="pvw">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
       <div><img class="vlogo" alt="Volentas.ch" style="height:42px;width:auto;display:block;margin-bottom:6px;"><div class="puid">CHE-473.550.646</div><div style="font-size:12px;color:var(--tl);margin-top:6px;line-height:1.7">Leimbachstrasse 215<br>8041 Zürich</div></div>
-      <div style="text-align:right;font-size:12px;color:var(--tm);line-height:1.8">www.volentas.ch<br><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="650b10170c4b0c1f040c170c25130a09000b1104164b060d">[email&#160;protected]</a><br>Tel. 044 543 58 86</div>
+      <div style="text-align:right;font-size:12px;color:var(--tm);line-height:1.8">www.volentas.ch<br>nuri.izairi@volentas.ch<br>Tel. 044 543 58 86</div>
     </div>
     <div id="r-pvw-content"></div>
   </div>
@@ -320,13 +336,13 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
   </div>
   <div id="o-form" style="display:none;">
     <div class="ph">
-      <div class="pt">Neue Offerte</div>
+      <div class="pt" id="o-titel">Neue Offerte</div>
       <button class="btn bto" onclick="oHideForm()">← Zurück</button>
     </div>
     <div class="card">
       <div class="ct">Kundendaten</div>
       <div class="fgrp" style="margin-bottom:1rem;">
-        <label>Gespeicherter Kunde wählen</label>
+        <label>Kunde wählen (füllt alles aus)</label>
         <select id="o-kunde-sel" onchange="oKundeWaehlen()" style="color:var(--gm);font-weight:500;">
           <option value="">— Neuer Kunde / manuell eingeben —</option>
         </select>
@@ -378,12 +394,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
     </div>
     <div class="br">
       <button class="btn bto" onclick="oVorschau()">👁 Vorschau</button>
-      <button class="btn btp" onclick="oErstellen()">Offerte erstellen &amp; PDF herunterladen →</button>
+      <button class="btn btp" id="o-btn-save" onclick="oErstellen()">Offerte erstellen &amp; PDF herunterladen →</button>
     </div>
     <div id="o-pvw" style="display:none;" class="pvw">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
         <div><img class="vlogo" alt="Volentas.ch" style="height:42px;width:auto;display:block;margin-bottom:6px;"><div class="puid">CHE-473.550.646</div><div style="font-size:12px;color:var(--tl);margin-top:6px;line-height:1.7">Leimbachstrasse 215<br>8041 Zürich</div></div>
-        <div style="text-align:right;font-size:12px;color:var(--tm);line-height:1.8">www.volentas.ch<br><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e08e959289ce899a81899289a0968f8c858e948193ce8388">[email&#160;protected]</a><br>Tel. 044 543 58 86</div>
+        <div style="text-align:right;font-size:12px;color:var(--tm);line-height:1.8">www.volentas.ch<br>nuri.izairi@volentas.ch<br>Tel. 044 543 58 86</div>
       </div>
       <div id="o-pvw-content"></div>
     </div>
@@ -396,11 +412,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;">
         <div><img class="vlogo" alt="Volentas.ch" style="height:42px;width:auto;display:block;margin-bottom:6px;"><div class="puid">CHE-473.550.646</div><div style="font-size:12px;color:var(--tl);margin-top:6px;line-height:1.7">Leimbachstrasse 215, 8041 Zürich</div></div>
-        <div style="text-align:right;font-size:12px;color:var(--tm);line-height:1.8">www.volentas.ch<br><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="79170c0b1057100318100b10390f16151c170d180a571a11">[email&#160;protected]</a><br>Tel. 044 543 58 86</div>
+        <div style="text-align:right;font-size:12px;color:var(--tm);line-height:1.8">www.volentas.ch<br>nuri.izairi@volentas.ch<br>Tel. 044 543 58 86</div>
       </div>
       <div id="o-detail-content"></div>
       <div class="sep"></div>
       <div class="br">
+        <button class="btn bto" onclick="oBearbeiten(curOId)">✎ Bearbeiten</button>
         <button class="btn btpdf" onclick="oPdfDetail()">⬇ PDF</button>
         <button class="btn bto" style="color:var(--gm);" onclick="oSendBestaetigung()">📤 Bestätigung senden</button>
         <button class="btn bto" style="color:#991B1B;border-color:#FECACA;" onclick="oSetStatus('abgelehnt')">✗ Abgelehnt</button>
@@ -427,6 +444,73 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
   <!-- Alte "Rechnung auswählen"-Karte entfernt: Unterschriften laufen jetzt über den Link. -->
 </div>
 
+<!-- ABOS -->
+<div id="abos" class="pg">
+  <div id="a2-list">
+    <div class="ph">
+      <div class="pt">Abos</div>
+      <button class="btn btp" onclick="abNeu()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Neues Abo
+      </button>
+    </div>
+    <div id="ab-hinweis"></div>
+    <div class="card">
+      <div class="ct">Wiederkehrende Rechnungen</div>
+      <p style="font-size:13px;color:var(--tm);margin-bottom:1rem;">Ist ein Abo fällig, erstellt die App die Rechnung automatisch als <b>Entwurf</b>. Du prüfst sie und gibst sie frei.</p>
+      <table class="tbl">
+        <thead><tr><th>Objekt</th><th>Rechnung an</th><th>Betrag</th><th>Rhythmus</th><th>Nächste Rechnung</th><th></th></tr></thead>
+        <tbody id="ab-tbl"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="a2-form" style="display:none;">
+    <div class="ph">
+      <div class="pt" id="ab-titel">Neues Abo</div>
+      <button class="btn bto" onclick="abZurueck()">← Zurück</button>
+    </div>
+    <div class="card">
+      <div class="ct">Kunde</div>
+      <div class="fgrp" style="margin-bottom:1rem;">
+        <label>Kunde wählen (füllt alles aus)</label>
+        <select id="ab-kunde-sel" onchange="abKundeWaehlen()" style="color:var(--gm);font-weight:500;"></select>
+      </div>
+      <div class="fg">
+        <div class="fgrp"><label>Firma / Rechnung an *</label><input id="ab-kunde" type="text"></div>
+        <div class="fgrp"><label>Kontaktperson</label><input id="ab-kontakt" type="text"></div>
+        <div class="fgrp"><label>Strasse &amp; Nr.</label><input id="ab-strasse" type="text"></div>
+        <div class="fgrp"><label>PLZ / Ort</label><input id="ab-plzort" type="text"></div>
+        <div class="fgrp"><label>Objekt / Standort *</label><input id="ab-objekt" type="text"></div>
+        <div class="fgrp"><label>E-Mail Kunde</label><input id="ab-email" type="email"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Was wird verrechnet?</div>
+      <div class="fgrp" style="margin-bottom:1rem;"><label>Beschreibung der Arbeiten *</label>
+        <textarea id="ab-leistung" style="min-height:90px;" placeholder="z.B. Schaufenster innen und aussen inkl. Klappfenster"></textarea>
+      </div>
+      <div class="fg3">
+        <div class="fgrp"><label>Betrag CHF (exkl. MWST) *</label><input id="ab-betrag" type="text" inputmode="decimal" placeholder="0.00"></div>
+        <div class="fgrp"><label>Rhythmus</label>
+          <select id="ab-intervall">
+            <option value="1">jeden Monat</option>
+            <option value="2">alle 2 Monate</option>
+            <option value="3">alle 3 Monate</option>
+            <option value="6">alle 6 Monate</option>
+            <option value="12">jedes Jahr</option>
+          </select>
+        </div>
+        <div class="fgrp"><label>Nächste Rechnung am *</label><input id="ab-naechste" type="date"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--tm);cursor:pointer;"><input id="ab-aktiv" type="checkbox" checked style="width:auto;"> Abo ist aktiv</label>
+    </div>
+    <div class="br">
+      <button class="btn bto" id="ab-del" style="color:#e53e3e;border-color:#fed7d7;display:none;" onclick="abLoeschen()">✕ Abo löschen</button>
+      <button class="btn btp" onclick="abSpeichern()">Abo speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- EINSTELLUNGEN -->
 <div id="einstellungen" class="pg">
   <div class="ph"><div class="pt">Einstellungen</div></div>
@@ -449,7 +533,7 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
 
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 // ============================================================
 // SUPABASE CONFIG
 // ============================================================
@@ -573,8 +657,10 @@ async function supaFetch(path, opts){
 }
 
 // Rote Warnleiste, solange etwas nicht in der Cloud gespeichert ist
+// Offene Aenderungen; Kunden/Abos zaehlen erst, wenn ihre Tabelle existiert
+function pendingZahl(){ return Object.keys(pendingGet()).filter(function(k){ var t=k.split('|')[0]; return !((t==='kunden'||t==='abos') && !EXTRA_OK[t]); }).length; }
 function syncStatus(){
-  var n=Object.keys(pendingGet()).length;
+  var n=pendingZahl();
   var b=document.getElementById('sync-banner');
   if(n===0 && LOAD_OK){ if(b) b.style.display='none'; return; }
   if(!b){
@@ -633,13 +719,22 @@ async function loadTable(table, localKey){
   }catch(e){ console.error('Laden fehlgeschlagen ('+table+'):', e); return {ok:false, data:local}; }
 }
 
+// Kunden und Abos liegen in eigenen Tabellen. Fehlen diese (SQL noch nicht ausgefuehrt),
+// arbeitet die App mit den lokalen Daten weiter, ohne die rote Warnleiste.
+var EXTRA_OK={kunden:false, abos:false};
 async function loadAll(){
-  var res=await Promise.all([loadTable('rechnungen','vol_r'), loadTable('offerten','vol_o')]);
+  var res=await Promise.all([loadTable('rechnungen','vol_r'), loadTable('offerten','vol_o'), loadTable('kunden','vol_k'), loadTable('abos','vol_a')]);
   RR=res[0].data; OO=res[1].data;
   LOAD_OK=res[0].ok && res[1].ok;
+  EXTRA_OK.kunden=res[2].ok; EXTRA_OK.abos=res[3].ok;
+  if(res[2].ok || res[2].data.length) KK=res[2].data;
+  AA=res[3].data;
   localStorage.setItem('vol_r',JSON.stringify(RR));
   localStorage.setItem('vol_o',JSON.stringify(OO));
+  localStorage.setItem('vol_k',JSON.stringify(KK));
+  localStorage.setItem('vol_a',JSON.stringify(AA));
 }
+function listeFuer(table){ return {rechnungen:RR, offerten:OO, kunden:KK, abos:AA}[table]||[]; }
 
 var _retrying=false, ADMIN_READY=false;
 async function retryPending(showResult){
@@ -649,15 +744,16 @@ async function retryPending(showResult){
     var p=pendingGet(), keys=Object.keys(p);
     for(var i=0;i<keys.length;i++){
       var k=keys[i], cut=k.indexOf('|'), table=k.slice(0,cut), id=k.slice(cut+1);
+      if((table==='kunden'||table==='abos') && !EXTRA_OK[table]) continue;
       if(p[k]==='delete'){ await supaDelete(table, id); continue; }
-      var list=(table==='rechnungen')?RR:OO;
+      var list=listeFuer(table);
       var rec=list.find(function(x){ return String(x.id)===id; });
       if(rec) await supaUpsert(table, rec); else pendingClear(table, id);
     }
   }finally{ _retrying=false; }
   syncStatus();
   if(showResult){
-    var n=Object.keys(pendingGet()).length;
+    var n=pendingZahl();
     alert(n===0 && LOAD_OK ? '✓ Alles in der Cloud gespeichert.' : '⚠ Immer noch keine Verbindung zur Cloud. Die Daten bleiben auf diesem Gerät gespeichert – bitte später erneut versuchen.');
   }
 }
@@ -684,6 +780,8 @@ function nrSicher(){
   return confirm('⚠ Keine Verbindung zur Cloud.\n\nDie Nummer wird nur anhand der Daten auf diesem Gerät vergeben und könnte doppelt sein, wenn auf einem anderen Gerät schon etwas erstellt wurde.\n\nTrotzdem erstellen?');
 }
 
+var R_STATUS_CLS={entwurf:'be',offen:'bo',bestaetigt:'bb2',bezahlt:'bp'};
+var R_STATUS_LBL={entwurf:'Entwurf',offen:'Offen',bestaetigt:'Bestätigt',bezahlt:'Bezahlt'};
 function chf(n){ return 'CHF '+n.toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fd(iso){ var p=iso.split('-'); return p[2]+'.'+p[1]+'.'+p[0]; }
 function td(){ return new Date().toISOString().slice(0,10); }
@@ -695,16 +793,21 @@ function escH(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repl
 // ============================================================
 // NAV
 // ============================================================
+// Unterseiten (z.B. Rechnungsformular) markieren ihren Hauptpunkt im Menue
+var NAV_PARENT={rechnung:'dashboard'};
 function goTo(id, btn) {
   document.querySelectorAll('.pg').forEach(function(p){ p.classList.remove('active'); });
   document.querySelectorAll('.nb').forEach(function(b){ b.classList.remove('active'); });
   el(id).classList.add('active');
+  if(!btn) btn=document.querySelector('.nb[data-pg="'+(NAV_PARENT[id]||id)+'"]');
   if(btn) btn.classList.add('active');
+  window.scrollTo(0,0);
   if(id==='dashboard') dRender();
   if(id==='bestaetigung') bInit();
   if(id==='offerte') oBackToList();
   if(id==='anfragen') aRender();
   if(id==='kunden'){ kRenderList(); show('k-list'); hide('k-form'); }
+  if(id==='abos') abZurueck();
 }
 
 // ============================================================
@@ -723,6 +826,9 @@ function updateAnfrageBadge(){
   var n=OO.filter(function(o){return o.status==='anfrage';}).length;
   var b=document.getElementById('anfrage-count');
   if(b){ if(n>0){ b.textContent=n; b.style.display='inline-block'; } else { b.style.display='none'; } }
+  // Menuepunkt nur zeigen, wenn es Anfragen gibt (oder man gerade dort ist)
+  var nb=document.getElementById('nb-anfragen');
+  if(nb) nb.style.display=(n>0 || el('anfragen').classList.contains('active'))?'':'none';
 }
 function aRender(){
   updateAnfrageBadge();
@@ -758,12 +864,18 @@ function dRender(){
   sortNachDatum(RR);
   var offen=RR.filter(function(r){ return r.status==='offen'; });
   el('d-offen').textContent=offen.length;
-  var mVal=RR.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
+  var mVal=RR.reduce(function(s,r){return s+(r.status==='entwurf'?0:r.tot);},0).toLocaleString('de-CH',{maximumFractionDigits:0});
   var aVal=offen.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
   el('d-monat').dataset.val=mVal; el('d-monat').textContent=umsatzVisible?mVal:'••••••';
   el('d-ausst').dataset.val=aVal; el('d-ausst').textContent=umsatzVisible?aVal:'••••••';
-  var rsmap={offen:'bo',bestaetigt:'bb2',bezahlt:'bp'};
-  var rlbl={offen:'Offen',bestaetigt:'Bestätigt',bezahlt:'Bezahlt'};
+  var rsmap=R_STATUS_CLS, rlbl=R_STATUS_LBL;
+  var entw=RR.filter(function(r){ return r.status==='entwurf'; });
+  var eb=el('entwurf-banner');
+  if(entw.length){
+    eb.style.cssText='display:block;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:13px 16px;margin-bottom:1.25rem;color:#1D4ED8;font-weight:500;font-size:15px;';
+    eb.innerHTML='📝 '+entw.length+(entw.length===1?' Rechnung wartet':' Rechnungen warten')+' als Entwurf auf deine Prüfung: '
+      +entw.map(function(r){ return '<a href="#" onclick="rDetail(\''+escH(r.id)+'\');return false;" style="color:#1D4ED8;">'+escH(r.id)+'</a>'; }).join(', ');
+  } else eb.style.display='none';
   var rrows='';
   for(var ri=0;ri<RR.length;ri++){
     var r=RR[ri];
@@ -786,24 +898,6 @@ function dRender(){
   var _ban=document.getElementById('anfrage-banner');
   if(!_ban){ _ban=document.createElement('div'); _ban.id='anfrage-banner'; var _dash=document.getElementById('dashboard'); if(_dash) _dash.insertBefore(_ban,_dash.firstChild); }
   if(_ban){ if(_anf.length){ _ban.style.cssText='background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:13px 16px;margin-bottom:1.25rem;color:#92400E;font-weight:500;cursor:pointer;font-size:15px;'; _ban.innerHTML='🔔 '+_anf.length+' neue Anfrage'+(_anf.length>1?'n':'')+' — hier prüfen →'; _ban.onclick=function(){ goTo('anfragen',document.getElementById('nb-anfragen')); }; } else { _ban.style.display='none'; } }
-  var osmap={entwurf:'be',gesendet:'bg2',akzeptiert:'bak',abgelehnt:'bal',anfrage:'bo'};
-  var olbl={entwurf:'Entwurf',gesendet:'Gesendet',akzeptiert:'Akzeptiert',abgelehnt:'Abgelehnt',anfrage:'🔔 Anfrage'};
-  var orows='';
-  for(var oi=0;oi<OO.length;oi++){
-    var o=OO[oi];
-    if(o.status==='anfrage') continue;
-    orows+='<tr>'
-      +'<td class="inr" style="cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+escH(o.id)+'</td>'
-      +'<td style="cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+escH(o.kunde)+'</td>'
-      +'<td style="color:var(--tm);font-size:13px;cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+escH(o.objekt)+'</td>'
-      +'<td style="color:var(--tl);cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+escH(o.datum)+'</td>'
-      +'<td style="font-weight:500;cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+chf(o.tot)+'</td>'
-      +'<td style="color:var(--tl);cursor:pointer" onclick="dODetail(this.dataset.id)" data-id="'+o.id+'">'+escH(o.gueltig)+'</td>'
-      +'<td><span class="bdg '+(osmap[o.status]||'be')+'">'+(olbl[o.status]||o.status)+'</span></td>'
-      +'<td style="white-space:nowrap"><button class="btd" onclick="pdfOfferte(\''+o.id+'\')" style="margin-right:4px">⬇ PDF</button><button class="btd" onclick="oLoeschenDash(\''+o.id+'\')" title="Löschen">✕</button></td>'
-      +'</tr>';
-  }
-  el('d-olist').innerHTML=orows;
   updateAnfrageBadge();
 }
 
@@ -832,31 +926,66 @@ function rBPv(){
   var t=rBetragUpdate();
   var leistung=el('r-leistung').value||'(Leistungsbeschreibung)';
   var rows='<tr><td style="font-size:15px;padding:12px 0;color:#1a1a1a;line-height:1.6;">'+escH(leistung)+'</td><td style="font-size:15px;font-weight:500;text-align:right;padding:12px 0;white-space:nowrap;">'+chf(t.sub)+'</td></tr>';
-  el('r-pvw-content').innerHTML=pvwH('Rechnung '+rNr(),
+  el('r-pvw-content').innerHTML=pvwH('Rechnung '+(rEditId||rNr()),
     el('r-kunde').value||'(Kunde)',el('r-kontakt').value,el('r-strasse').value,el('r-plzort').value,el('r-objekt').value||'(Objekt)',
     el('r-datum').value?fd(el('r-datum').value):'—','','','',
     rows,t.sub,t.mwst,t.tot,'Zahlbar innert 30 Tagen');
+}
+
+// TT.MM.JJJJ -> JJJJ-MM-TT (fuer date-Felder)
+function isoAusDatum(d){ var m=String(d||'').match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/); return m ? m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0') : ''; }
+// Alle Positionen als ein Text (aeltere Eintraege haben mehrere Positionen)
+function posText(d){ return (d.pos||[]).map(function(p){ return p.desc||''; }).filter(Boolean).join('\n'); }
+
+var R_FELDER=['r-kunde','r-kontakt','r-strasse','r-plzort','r-objekt','r-email','r-bemerk','r-betrag','r-leistung'];
+var rEditId=null;
+function rFormModus(id){
+  rEditId=id||null;
+  el('r-titel').textContent=rEditId?('Rechnung '+rEditId+' bearbeiten'):'Neue Rechnung';
+  el('r-btn-save').innerHTML=rEditId?'Änderungen speichern &amp; PDF herunterladen →':'Rechnung erstellen &amp; PDF herunterladen →';
+}
+function rNeu(){
+  R_FELDER.forEach(function(id){el(id).value='';});
+  el('r-kunde-sel').value=''; el('r-datum').value=td(); el('r-pvw').style.display='none';
+  rFormModus(null); rBetragUpdate();
+  goTo('rechnung');
+}
+function rBearbeiten(id){
+  var r=RR.find(function(x){return x.id===id;}); if(!r) return;
+  if((r.status==='bestaetigt'||r.status==='bezahlt') && !confirm('Rechnung '+id+' ist schon '+(R_STATUS_LBL[r.status]||r.status)+'.\nTrotzdem bearbeiten?')) return;
+  el('r-kunde-sel').value='';
+  el('r-kunde').value=r.kunde||''; el('r-kontakt').value=r.kontakt||'';
+  el('r-strasse').value=r.strasse||''; el('r-plzort').value=r.plzort||'';
+  el('r-objekt').value=r.objekt||''; el('r-email').value=r.email||'';
+  el('r-bemerk').value=r.bemerk||''; el('r-leistung').value=posText(r);
+  el('r-betrag').value=String(r.sub||'');
+  el('r-datum').value=isoAusDatum(r.datum)||td(); el('r-pvw').style.display='none';
+  rFormModus(id); rBetragUpdate();
+  goTo('rechnung');
 }
 function rErstellen(){
   var k=el('r-kunde').value.trim();
   if(!k){alert('Bitte Kundenname eingeben.');return;}
   var betragVal=parseFloat((el('r-betrag').value||'0').replace(',','.'));
   if(!betragVal||betragVal<=0){alert('Bitte Betrag eingeben.');return;}
-  if(!nrSicher()) return;
+  var alt=rEditId?RR.find(function(x){return x.id===rEditId;}):null;
+  if(!alt && !nrSicher()) return;
   var t=rBetragUpdate();
-  var nr=rNr(),dv=el('r-datum').value||td();
+  var dv=el('r-datum').value||td();
   var leistung=el('r-leistung').value||'Reinigungsarbeiten';
-  var rec={id:nr,kunde:k,kontakt:el('r-kontakt').value,strasse:el('r-strasse').value,plzort:el('r-plzort').value,
+  var daten={kunde:k,kontakt:el('r-kontakt').value,strasse:el('r-strasse').value,plzort:el('r-plzort').value,
     objekt:el('r-objekt').value,email:el('r-email').value,datum:fd(dv),ausf:fd(dv),
-    sub:t.sub,tot:t.tot,status:'offen',bemerk:el('r-bemerk').value,
+    sub:t.sub,tot:t.tot,bemerk:el('r-bemerk').value,
     pos:[{desc:leistung,me:'',ansatz:t.sub,betrag:t.sub}]};
-  RR.unshift(rec);
+  var rec;
+  if(alt){ rec=Object.assign(alt,daten); }
+  else { rec=Object.assign({id:rNr(),status:'offen'},daten); RR.unshift(rec); }
   sR(rec);
   pdfDoc(rec,false,null);
-  ['r-kunde','r-kontakt','r-strasse','r-plzort','r-objekt','r-email','r-bemerk','r-betrag','r-leistung'].forEach(function(id){el(id).value='';});
+  R_FELDER.forEach(function(id){el(id).value='';});
   el('r-datum').value=td(); el('r-pvw').style.display='none';
-  rBetragUpdate();
-  goTo('dashboard',document.querySelector('.nb'));
+  rFormModus(null); rBetragUpdate();
+  goTo('dashboard');
 }
 
 // ============================================================
@@ -876,8 +1005,29 @@ function oCalc(){ return oBetragUpdate(); }
 function oNr(){ var d=new Date(); var pre='OF-'+(d.getFullYear().toString().slice(2))+(String(d.getMonth()+1).padStart(2,'0')); var mx=0; OO.forEach(function(x){ var s=String(x.id||''); if(s.indexOf(pre)===0){ var n=parseInt(s.slice(pre.length),10); if(!isNaN(n)&&n>mx) mx=n; } }); return pre+String(mx+1).padStart(4,'0'); }
 
 var anfrageQuelle=null;
-function oShowForm(){
+var oEditId=null;
+function oFormModus(id){
+  oEditId=id||null;
+  el('o-titel').textContent=oEditId?('Offerte '+oEditId+' bearbeiten'):'Neue Offerte';
+  el('o-btn-save').innerHTML=oEditId?'Änderungen speichern &amp; PDF herunterladen →':'Offerte erstellen &amp; PDF herunterladen →';
+}
+function oBearbeiten(id){
+  var o=OO.find(function(x){return x.id===id;}); if(!o) return;
   anfrageQuelle=null;
+  hide('o-list'); show('o-form'); hide('o-detail');
+  el('o-kunde-sel').value='';
+  el('o-kunde').value=o.kunde||''; el('o-kontakt').value=o.kontakt||'';
+  el('o-strasse').value=o.strasse||''; el('o-plzort').value=o.plzort||'';
+  el('o-objekt').value=o.objekt||''; el('o-email').value=o.email||'';
+  el('o-bemerk').value=o.bemerk||''; el('o-leistung').value=posText(o);
+  el('o-betrag').value=String(o.sub||'');
+  el('o-datum').value=isoAusDatum(o.datum)||td(); el('o-gueltig').value=isoAusDatum(o.gueltig);
+  el('o-pvw').style.display='none';
+  oFormModus(id); oBetragUpdate();
+  window.scrollTo(0,0);
+}
+function oShowForm(){
+  anfrageQuelle=null; oFormModus(null);
   hide('o-list'); show('o-form'); hide('o-detail');
   ['o-kunde','o-kontakt','o-strasse','o-plzort','o-objekt','o-email','o-bemerk','o-leistung','o-betrag'].forEach(function(id){el(id).value='';});
   el('o-datum').value=td();
@@ -890,10 +1040,7 @@ function oBackToList(){ show('o-list'); hide('o-form'); hide('o-detail'); oRL();
 function oAnfrageBearbeiten(id){
   var o=OO.find(function(x){return x.id===id;}); if(!o) return;
   anfrageQuelle=id;
-  document.querySelectorAll('.pg').forEach(function(pg){pg.classList.remove('active');});
-  document.querySelectorAll('.nb').forEach(function(nb){nb.classList.remove('active');});
-  var _op=document.getElementById('offerte'); if(_op) _op.classList.add('active');
-  var _ob=document.querySelectorAll('.nb')[2]; if(_ob) _ob.classList.add('active');
+  goTo('offerte'); oFormModus(null);
   hide('o-list'); show('o-form'); hide('o-detail');
   el('o-kunde').value=o.kunde||''; el('o-kontakt').value=o.kontakt||'';
   el('o-strasse').value=o.strasse||''; el('o-plzort').value=o.plzort||'';
@@ -962,14 +1109,18 @@ function oErstellen(){
   if(!k){alert('Bitte Kundenname eingeben.');return;}
   var betragVal=parseFloat((el('o-betrag').value||'0').replace(',','.'));
   if(!betragVal||betragVal<=0){alert('Bitte Betrag eingeben.');return;}
-  if(!nrSicher()) return;
-  var t=oBetragUpdate(),nr=oNr(),dv=el('o-datum').value||td(),gv=el('o-gueltig').value;
+  var alt=oEditId?OO.find(function(x){return x.id===oEditId;}):null;
+  if(!alt && !nrSicher()) return;
+  var t=oBetragUpdate(),dv=el('o-datum').value||td(),gv=el('o-gueltig').value;
   var leistung=el('o-leistung').value||'Reinigungsarbeiten';
-  var off={id:nr,kunde:k,kontakt:el('o-kontakt').value,strasse:el('o-strasse').value,plzort:el('o-plzort').value,
-    objekt:el('o-objekt').value,email:el('o-email').value,datum:fd(dv),gueltig:gv?fd(gv):'—',ausf:'',
-    bemerk:el('o-bemerk').value,sub:t.sub,tot:t.tot,status:'entwurf',
+  var daten={kunde:k,kontakt:el('o-kontakt').value,strasse:el('o-strasse').value,plzort:el('o-plzort').value,
+    objekt:el('o-objekt').value,email:el('o-email').value,datum:fd(dv),gueltig:gv?fd(gv):'—',
+    bemerk:el('o-bemerk').value,sub:t.sub,tot:t.tot,
     pos:[{desc:leistung,me:'',ansatz:t.sub,betrag:t.sub}]};
-  OO.unshift(off);
+  var off;
+  if(alt){ off=Object.assign(alt,daten); }
+  else { off=Object.assign({id:oNr(),ausf:'',status:'entwurf'},daten); OO.unshift(off); }
+  oFormModus(null);
   sO(off);
   if(anfrageQuelle){ var _aq=anfrageQuelle; anfrageQuelle=null; OO=OO.filter(function(x){return x.id!==_aq;}); deleteO(_aq); localStorage.setItem('vol_o',JSON.stringify(OO)); updateAnfrageBadge(); }
   pdfDoc(off,true,null);
@@ -991,16 +1142,14 @@ function oSetStatus(s){
 }
 function oZuRechnung(){
   var o=OO.find(function(x){return x.id===curOId;}); if(!o) return;
-  goTo('rechnung',document.querySelectorAll('.nb')[1]);
-  setTimeout(function(){
-    el('r-kunde').value=o.kunde; el('r-kontakt').value=o.kontakt;
-    el('r-strasse').value=o.strasse; el('r-plzort').value=o.plzort;
-    el('r-objekt').value=o.objekt; el('r-email').value=o.email||'';
-    el('r-bemerk').value='Gemäss Offerte '+o.id+' vom '+o.datum;
-    rPos=(o.pos||[]).map(function(p,i){return {id:'r'+Date.now()+i,desc:p.desc,me:p.me,ansatz:p.ansatz,betrag:p.betrag};});
-    rRP();
-    alert('✓ Daten aus Offerte '+o.id+' übertragen.\nBitte Ausführungsdatum ergänzen.');
-  },50);
+  rNeu();
+  el('r-kunde').value=o.kunde||''; el('r-kontakt').value=o.kontakt||'';
+  el('r-strasse').value=o.strasse||''; el('r-plzort').value=o.plzort||'';
+  el('r-objekt').value=o.objekt||''; el('r-email').value=o.email||'';
+  el('r-bemerk').value='Gemäss Offerte '+o.id+' vom '+o.datum;
+  el('r-leistung').value=posText(o); el('r-betrag').value=String(o.sub||'');
+  rBetragUpdate();
+  alert('✓ Daten aus Offerte '+o.id+' übertragen.\nBitte Datum prüfen.');
 }
 
 // ============================================================
@@ -1130,15 +1279,17 @@ function pdfDoc(doc, isOfferte, sigDataUrl){
 
 function pdfRechnung(id){var r=RR.find(function(x){return x.id===id;});if(r) pdfDoc(r,false,null);}
 function dODetail(id){
-  goTo('offerte', document.querySelectorAll('.nb')[2]);
+  goTo('offerte');
   setTimeout(function(){ oDetail(id); }, 50);
 }
 
 function rDetail(id){
   var r=RR.find(function(x){return x.id===id;});
   if(!r) return;
-  var rsmap={offen:'bo',bestaetigt:'bb2',bezahlt:'bp'};
-  var rlbl={offen:'Offen',bestaetigt:'Bestätigt',bezahlt:'Bezahlt'};
+  var fb=el('r-detail-freigeben');
+  fb.style.display=(r.status==='entwurf')?'':'none';
+  fb.onclick=function(){ r.status='offen'; sR(r); hide('r-detail'); dRender(); };
+  el('r-detail-edit').onclick=function(){ hide('r-detail'); rBearbeiten(id); };
   var rows=(r.pos||[]).map(function(p){return '<tr><td style="font-size:15px;padding:12px 0;color:#1a1a1a;line-height:1.6;">'+escH(p.desc)+'</td><td style="font-size:15px;font-weight:500;text-align:right;padding:12px 0;white-space:nowrap;">CHF '+p.betrag.toLocaleString('de-CH',{minimumFractionDigits:2})+'</td></tr>';}).join('');
   el('r-detail-content').innerHTML=pvwH('Rechnung '+r.id,r.kunde,r.kontakt,r.strasse,r.plzort,r.objekt,r.datum,r.ausf||'','','',rows,r.sub,r.sub*0.081,r.tot,'Zahlbar innert 30 Tagen');
   el('r-detail-pdf').onclick=function(){pdfRechnung(id);};
@@ -1507,92 +1658,195 @@ function eSave(){var e=el('e-ok');e.style.display='block';setTimeout(function(){
 // ============================================================
 // KUNDEN
 // ============================================================
-var KK = JSON.parse(localStorage.getItem('vol_k')||'null') || [
-  {id:'k1',firma:'VALORA Food Service Schweiz AG',kontakt:'Herr Thomas Schaffer',strasse:'Neuenkirchstrasse 91',plzort:'6020 Emmenbrücke',email:'',tel:''},
-  {id:'k2',firma:'Migros Genossenschaft',kontakt:'Frau Sandra Koch',strasse:'Limmatstrasse 152',plzort:'8005 Zürich',email:'',tel:''},
-];
+var KK = JSON.parse(localStorage.getItem('vol_k')||'null') || [];
+var AA = JSON.parse(localStorage.getItem('vol_a')||'null') || [];
 function sK(){ localStorage.setItem('vol_k',JSON.stringify(KK)); }
 
-function kShowForm(){
+var kEditId=null;
+var K_FELDER=['k-firma','k-objekt','k-kontakt','k-strasse','k-plzort','k-email','k-tel'];
+function kShowForm(id){
+  var k=id?KK.find(function(x){return x.id===id;}):null;
+  kEditId=k?k.id:null;
   hide('k-list'); show('k-form');
-  ['k-firma','k-kontakt','k-strasse','k-plzort','k-email','k-tel'].forEach(function(id){el(id).value='';});
+  K_FELDER.forEach(function(f){ el(f).value=k?(k[f.slice(2)]||''):''; });
+  el('k-titel').textContent=k?'Kunde bearbeiten':'Neuer Kunde';
+  el('k-del').style.display=k?'':'none';
 }
 function kHideForm(){ show('k-list'); hide('k-form'); kRenderList(); }
+
+function kName(k){ return k.objekt ? k.objekt+' – '+k.firma : k.firma; }
+function kSortiert(){ return KK.slice().sort(function(a,b){ return kName(a).localeCompare(kName(b),'de'); }); }
+
+// Tabellenzelle, die beim Antippen das Formular der Zeile oeffnet
+function zelle(inhalt, stil, klick){ return '<td style="cursor:pointer;'+(stil||'')+'" onclick="'+klick+'(this.parentNode.dataset.id)">'+inhalt+'</td>'; }
 
 function kRenderList(){
   if(KK.length===0){
     el('k-tbl').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--tl);padding:2rem;">Noch keine Kunden gespeichert</td></tr>';
     return;
   }
-  var rows='';
-  for(var i=0;i<KK.length;i++){
-    var k=KK[i];
-    rows+='<tr>'
-      +'<td style="font-weight:500">'+escH(k.firma)+'</td>'
-      +'<td style="color:var(--tm)">'+escH(k.kontakt)+'</td>'
-      +'<td style="color:var(--tl);font-size:13px">'+escH(k.strasse)+'</td>'
-      +'<td style="color:var(--tl);font-size:13px">'+escH(k.plzort)+'</td>'
-      +'<td><button class="btd" onclick="kLoeschen(this.dataset.id)" data-id="'+k.id+'">✕</button></td>'
+  el('k-tbl').innerHTML=kSortiert().map(function(k){
+    return '<tr data-id="'+escH(k.id)+'">'
+      +zelle(escH(k.firma),'font-weight:500;','kShowForm')
+      +zelle(escH(k.objekt),'color:var(--tm);font-size:13px;','kShowForm')
+      +zelle(escH(k.kontakt),'color:var(--tm);','kShowForm')
+      +zelle(escH([k.strasse,k.plzort].filter(Boolean).join(', ')),'color:var(--tl);font-size:13px;','kShowForm')
+      +'<td><button class="btd" onclick="kShowForm(this.closest(\'tr\').dataset.id)">✎</button></td>'
       +'</tr>';
-  }
-  el('k-tbl').innerHTML=rows;
+  }).join('');
 }
 
 function kSpeichern(){
   var firma=el('k-firma').value.trim();
   if(!firma){alert('Bitte Firmenname eingeben.');return;}
-  KK.push({
-    id:'k'+Date.now(),
-    firma:firma,
-    kontakt:el('k-kontakt').value,
-    strasse:el('k-strasse').value,
-    plzort:el('k-plzort').value,
-    email:el('k-email').value,
-    tel:el('k-tel').value
-  });
-  sK(); kHideForm(); kFillDropdowns();
-  alert('✓ Kunde gespeichert!');
+  var k=kEditId?KK.find(function(x){return x.id===kEditId;}):null;
+  if(!k){ k={id:'k'+Date.now()}; KK.push(k); }
+  K_FELDER.forEach(function(f){ k[f.slice(2)]=el(f).value.trim(); });
+  sK(); supaUpsert('kunden', k).then(syncStatus);
+  kHideForm(); kFillDropdowns();
 }
 
 function kLoeschen(id){
   var k=KK.find(function(x){return x.id===id;});
   if(!k) return;
-  if(!confirm('Kunde loeschen: '+k.firma+'?')) return;
+  if(!confirm('Kunde löschen: '+kName(k)+'?')) return;
   KK=KK.filter(function(x){return x.id!==id;});
-  sK(); kRenderList(); kFillDropdowns();
+  sK(); supaDelete('kunden', id).then(syncStatus);
+  kHideForm(); kFillDropdowns();
 }
 
 function kFillDropdowns(){
-  var opts='<option value="">— Neuer Kunde / manuell eingeben —</option>';
-  KK.forEach(function(k){
-    opts+='<option value="'+k.id+'">'+escH(k.firma)+'</option>';
+  var opts='<option value="">— Kunde wählen oder unten von Hand eingeben —</option>';
+  kSortiert().forEach(function(k){
+    opts+='<option value="'+escH(k.id)+'">'+escH(kName(k))+'</option>';
   });
-  if(el('r-kunde-sel')) el('r-kunde-sel').innerHTML=opts;
-  if(el('o-kunde-sel')) el('o-kunde-sel').innerHTML=opts;
+  ['r-kunde-sel','o-kunde-sel','ab-kunde-sel'].forEach(function(id){ if(el(id)) el(id).innerHTML=opts; });
 }
 
-function rKundeWaehlen(){
-  var id=el('r-kunde-sel').value;
-  if(!id){ return; }
-  var k=KK.find(function(x){return x.id===id;});
-  if(!k) return;
-  el('r-kunde').value=k.firma;
-  el('r-kontakt').value=k.kontakt;
-  el('r-strasse').value=k.strasse;
-  el('r-plzort').value=k.plzort;
-  el('r-email').value=k.email;
+// Fuellt die Felder eines Formulars (Praefix r-, o-, ab-) aus dem gewaehlten Kunden
+function kEinfuellen(pre){
+  var id=el(pre+'kunde-sel').value; if(!id) return;
+  var k=KK.find(function(x){return x.id===id;}); if(!k) return;
+  el(pre+'kunde').value=k.firma||''; el(pre+'kontakt').value=k.kontakt||'';
+  el(pre+'strasse').value=k.strasse||''; el(pre+'plzort').value=k.plzort||'';
+  el(pre+'email').value=k.email||'';
+  if(k.objekt) el(pre+'objekt').value=k.objekt;
+}
+function rKundeWaehlen(){ kEinfuellen('r-'); }
+function oKundeWaehlen(){ kEinfuellen('o-'); }
+function abKundeWaehlen(){ kEinfuellen('ab-'); }
+
+// ============================================================
+// ABOS (wiederkehrende Rechnungen)
+// ============================================================
+var AB_FELDER=['ab-kunde','ab-kontakt','ab-strasse','ab-plzort','ab-objekt','ab-email','ab-leistung'];
+var abEditId=null;
+var AB_RHYTHMUS={1:'jeden Monat',2:'alle 2 Monate',3:'alle 3 Monate',6:'alle 6 Monate',12:'jedes Jahr'};
+
+// JJJJ-MM-TT plus n Monate; der 31. wird im kuerzeren Monat zum letzten Tag
+function plusMonate(iso, n){
+  var p=iso.split('-').map(Number), y=p[0], m=p[1]-1+n, d=p[2];
+  y+=Math.floor(m/12); m=((m%12)+12)%12;
+  var letzter=new Date(Date.UTC(y,m+1,0)).getUTCDate();
+  return y+'-'+String(m+1).padStart(2,'0')+'-'+String(Math.min(d,letzter)).padStart(2,'0');
 }
 
-function oKundeWaehlen(){
-  var id=el('o-kunde-sel').value;
-  if(!id){ return; }
-  var k=KK.find(function(x){return x.id===id;});
-  if(!k) return;
-  el('o-kunde').value=k.firma;
-  el('o-kontakt').value=k.kontakt;
-  el('o-strasse').value=k.strasse;
-  el('o-plzort').value=k.plzort;
-  el('o-email').value=k.email;
+function abRender(){
+  el('ab-hinweis').innerHTML=EXTRA_OK.abos?'':'<div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:13px 16px;margin-bottom:1.25rem;color:#92400E;font-size:14px;">⚠ Abos sind noch nicht mit der Cloud verbunden und werden nur auf diesem Gerät gespeichert. Rechnungen erstellt die App erst, wenn die Verbindung steht.</div>';
+  if(AA.length===0){
+    el('ab-tbl').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--tl);padding:2rem;">Noch keine Abos. Lege mit „Neues Abo“ das erste an.</td></tr>';
+    return;
+  }
+  var liste=AA.slice().sort(function(a,b){ return String(a.naechste).localeCompare(String(b.naechste)); });
+  el('ab-tbl').innerHTML=liste.map(function(a){
+    var naechste=a.aktiv?fd(a.naechste):'<span class="bdg be">pausiert</span>';
+    return '<tr data-id="'+escH(a.id)+'">'
+      +zelle(escH(a.objekt),'font-weight:500;','abBearbeiten')
+      +zelle(escH(a.kunde),'color:var(--tm);font-size:13px;','abBearbeiten')
+      +zelle(chf(Number(a.betrag)||0),'font-weight:500;white-space:nowrap;','abBearbeiten')
+      +zelle(AB_RHYTHMUS[a.intervall_monate]||('alle '+a.intervall_monate+' Monate'),'color:var(--tm);','abBearbeiten')
+      +zelle(naechste,'','abBearbeiten')
+      +'<td><button class="btd" onclick="abBearbeiten(this.closest(\'tr\').dataset.id)">✎</button></td>'
+      +'</tr>';
+  }).join('');
+}
+function abZurueck(){ show('a2-list'); hide('a2-form'); abRender(); }
+function abNeu(){ abBearbeiten(null); }
+function abBearbeiten(id){
+  var a=id?AA.find(function(x){return x.id===id;}):null;
+  abEditId=a?a.id:null;
+  hide('a2-list'); show('a2-form');
+  el('ab-kunde-sel').value='';
+  AB_FELDER.forEach(function(f){ el(f).value=a?(a[f.slice(3)]||''):''; });
+  el('ab-betrag').value=a?String(a.betrag):'';
+  el('ab-intervall').value=a?String(a.intervall_monate):'1';
+  el('ab-naechste').value=a?a.naechste:td();
+  el('ab-aktiv').checked=a?!!a.aktiv:true;
+  el('ab-titel').textContent=a?'Abo bearbeiten':'Neues Abo';
+  el('ab-del').style.display=a?'':'none';
+  window.scrollTo(0,0);
+}
+async function abSpeichern(){
+  var firma=el('ab-kunde').value.trim(), objekt=el('ab-objekt').value.trim(), leistung=el('ab-leistung').value.trim();
+  var betrag=parseFloat((el('ab-betrag').value||'').replace(/'/g,'').replace(',','.'));
+  var naechste=el('ab-naechste').value;
+  if(!firma||!objekt){ alert('Bitte Firma und Objekt eingeben.'); return; }
+  if(!leistung){ alert('Bitte die Arbeiten beschreiben.'); return; }
+  if(!betrag||betrag<=0){ alert('Bitte Betrag eingeben.'); return; }
+  if(!naechste){ alert('Bitte das Datum der nächsten Rechnung wählen.'); return; }
+  var a=abEditId?AA.find(function(x){return x.id===abEditId;}):null;
+  if(!a){ a={id:'abo'+Date.now()}; AA.push(a); }
+  AB_FELDER.forEach(function(f){ a[f.slice(3)]=el(f).value.trim(); });
+  a.betrag=betrag; a.intervall_monate=Number(el('ab-intervall').value); a.naechste=naechste; a.aktiv=el('ab-aktiv').checked;
+  localStorage.setItem('vol_a',JSON.stringify(AA));
+  await supaUpsert('abos', a); syncStatus();
+  abZurueck();
+  if(a.aktiv && naechste<=td()){
+    var n=await abosAusfuehren();
+    if(n) alert('✓ '+n+(n===1?' Rechnung wurde':' Rechnungen wurden')+' als Entwurf erstellt. Du findest sie unter „Rechnungen“.');
+  }
+}
+function abLoeschen(){
+  var a=AA.find(function(x){return x.id===abEditId;}); if(!a) return;
+  if(!confirm('Abo „'+a.objekt+'“ löschen?\nBereits erstellte Rechnungen bleiben erhalten.')) return;
+  AA=AA.filter(function(x){return x.id!==a.id;});
+  localStorage.setItem('vol_a',JSON.stringify(AA));
+  supaDelete('abos', a.id).then(syncStatus);
+  abZurueck();
+}
+
+// Erstellt fuer jedes faellige Abo die Rechnung als Entwurf. Damit zwei Geraete
+// nicht beide dieselbe Rechnung erstellen, wird das Abo zuerst in der Cloud
+// weitergeschaltet – nur wer das schafft, erstellt die Rechnung.
+var _abosLaufen=false;
+async function abosAusfuehren(){
+  if(_abosLaufen || !EXTRA_OK.abos || !LOAD_OK) return 0;
+  _abosLaufen=true; var neu=[];
+  try{
+    var heute=td();
+    for(var i=0;i<AA.length;i++){
+      var a=AA[i], schutz=0;
+      while(a.aktiv && a.naechste && a.naechste<=heute && schutz++<24){
+        var alt=a.naechste, next=plusMonate(alt, Number(a.intervall_monate)||1);
+        var r=await supaFetch('/rest/v1/abos?id=eq.'+encodeURIComponent(a.id)+'&naechste=eq.'+alt,
+          {method:'PATCH',headers:{'Prefer':'return=representation'},body:JSON.stringify({naechste:next})});
+        if(!r.ok) break;
+        var rows=await r.json();
+        if(!rows.length) break;
+        a.naechste=next;
+        var sub=Number(a.betrag)||0, tot=chRound(sub+chRound(sub*0.081));
+        var rec={id:rNr(),status:'entwurf',kunde:a.kunde,kontakt:a.kontakt||'',strasse:a.strasse||'',plzort:a.plzort||'',
+          objekt:a.objekt,email:a.email||'',datum:fd(alt),ausf:fd(alt),sub:sub,tot:tot,bemerk:'',
+          pos:[{desc:a.leistung,me:'',ansatz:sub,betrag:sub}]};
+        RR.unshift(rec); await sR(rec); neu.push(rec.id);
+      }
+    }
+  } finally {
+    _abosLaufen=false;
+    localStorage.setItem('vol_a',JSON.stringify(AA));
+  }
+  if(neu.length){ dRender(); if(el('abos').classList.contains('active')) abRender(); }
+  return neu.length;
 }
 
 // ============================================================
@@ -1608,6 +1862,7 @@ async function migrateAndLoad(){
   dRender();
   kFillDropdowns();
   await retryPending();
+  await abosAusfuehren();
 }
 // migrateAndLoad() wird erst nach Login ueber boot() gestartet
 
