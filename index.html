@@ -91,6 +91,9 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
 .di label{font-size:11px;color:var(--tl);display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px;}
 .di strong{font-size:14px;color:var(--td);}
 .sep{border-top:1px solid #e2ece2;margin:1rem 0;}
+.seg{display:inline-flex;background:#eef4ee;border-radius:8px;padding:3px;gap:2px;}
+.seg button{border:none;background:transparent;padding:6px 14px;border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--tm);cursor:pointer;}
+.seg button.on{background:#fff;color:var(--gd);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08);}
 .smiley-btn{background:transparent;border:2px solid #e0e0e0;border-radius:12px;padding:12px 20px;font-size:28px;cursor:pointer;transition:all .15s;text-align:center;line-height:1;}
 .smiley-btn:hover{border-color:#A5D6A7;background:#E8F5E9;}
 .smiley-btn.active{border-color:#1B6B3A;background:#E8F5E9;transform:scale(1.1);}
@@ -138,6 +141,10 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
     Abos
   </button>
+  <button class="nb" data-pg="ausgaben" onclick="goTo('ausgaben',this)">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    Ausgaben
+  </button>
   <button class="nb" data-pg="kunden" onclick="goTo('kunden',this)">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
     Kunden
@@ -172,12 +179,19 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
       <svg id="eye-icon" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
     </button>
     <div class="sc"><div class="sl">Offene Rechnungen</div><div class="sv" id="d-offen">0</div></div>
-    <div class="sc"><div class="sl">Umsatz gesamt (CHF)</div><div class="sv umsatz-val" id="d-monat">0</div></div>
+    <div class="sc"><div class="sl">Umsatz aktuell (CHF)</div><div class="sv umsatz-val" id="d-monat">0</div></div>
     <div class="sc"><div class="sl">Ausstehend (CHF)</div><div class="sv umsatz-val" id="d-ausst">0</div></div>
   </div>
   <div id="entwurf-banner" style="display:none;"></div>
   <div class="card">
-    <div class="ct">Alle Rechnungen</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:1rem;">
+      <div class="seg">
+        <button id="rv-aktuell" class="on" onclick="rAnsicht('aktuell')">Aktuell</button>
+        <button id="rv-archiv" onclick="rAnsicht('archiv')">Archiv</button>
+      </div>
+      <button class="btd" id="r-alle-archiv" onclick="rAlleArchivieren()" style="font-size:13px;padding:6px 12px;">📦 Alle aktuellen ins Archiv</button>
+    </div>
+    <div id="r-archiv-info" style="display:none;font-size:13px;color:var(--tm);margin-bottom:.75rem;"></div>
     <table class="tbl">
       <thead><tr><th>Nummer</th><th>Kunde</th><th>Objekt</th><th>Datum</th><th>Betrag</th><th>Status</th><th></th></tr></thead>
       <tbody id="d-rlist"></tbody>
@@ -197,6 +211,7 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
           <button class="btn bto" id="r-detail-edit" onclick="">✎ Bearbeiten</button>
           <button class="btn btp" id="r-detail-pdf" onclick="">⬇ PDF herunterladen</button>
           <button class="btn bto" style="color:var(--gm);" id="r-detail-send" onclick="">📤 Bestätigung senden</button>
+          <button class="btn bto" id="r-detail-archiv" onclick="">📦 Ins Archiv</button>
           <button class="btn bto" style="color:#e53e3e;border-color:#fed7d7;" id="r-detail-del" onclick="">✕ Löschen</button>
           <button class="btn bto" onclick="hide('r-detail')">Schliessen</button>
         </div>
@@ -511,6 +526,72 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
   </div>
 </div>
 
+<!-- AUSGABEN -->
+<div id="ausgaben" class="pg">
+  <div id="x-list">
+    <div class="ph">
+      <div class="pt">Ausgaben &amp; Überblick</div>
+      <button class="btn btp" onclick="xBearbeiten(null)">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Neue Ausgabe
+      </button>
+    </div>
+    <div id="x-hinweis"></div>
+    <div class="seg" style="margin-bottom:1rem;">
+      <button data-z="monat" onclick="xZeitraum('monat')">Dieser Monat</button>
+      <button data-z="vormonat" onclick="xZeitraum('vormonat')">Letzter Monat</button>
+      <button data-z="jahr" onclick="xZeitraum('jahr')">Dieses Jahr</button>
+      <button data-z="alles" onclick="xZeitraum('alles')">Alles</button>
+    </div>
+    <div class="sg">
+      <div class="sc"><div class="sl">Einnahmen (exkl. MWST)</div><div class="sv" id="x-ein">0</div></div>
+      <div class="sc" style="background:#9A3412;"><div class="sl">Ausgaben</div><div class="sv" id="x-aus">0</div></div>
+      <div class="sc" id="x-erg-box"><div class="sl">Ergebnis</div><div class="sv" id="x-erg">0</div></div>
+    </div>
+    <div class="card" id="x-kat-card">
+      <div class="ct">Ausgaben nach Kategorie</div>
+      <div id="x-kat"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Alle Ausgaben im Zeitraum</div>
+      <table class="tbl">
+        <thead><tr><th>Datum</th><th>Beschreibung</th><th>Kategorie</th><th>Betrag</th><th></th></tr></thead>
+        <tbody id="x-tbl"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="x-form" style="display:none;">
+    <div class="ph">
+      <div class="pt" id="x-titel">Neue Ausgabe</div>
+      <button class="btn bto" onclick="xZurueck()">← Zurück</button>
+    </div>
+    <div class="card">
+      <div class="fg">
+        <div class="fgrp"><label>Datum *</label><input id="x-datum" type="date"></div>
+        <div class="fgrp"><label>Betrag CHF *</label><input id="x-betrag" type="text" inputmode="decimal" placeholder="0.00"></div>
+        <div class="fgrp"><label>Was wurde gekauft / bezahlt? *</label><input id="x-beschreibung" type="text" placeholder="z.B. Reinigungsmittel Migros"></div>
+        <div class="fgrp"><label>Kategorie</label>
+          <select id="x-kategorie">
+            <option>Material &amp; Reinigungsmittel</option>
+            <option>Fahrzeug &amp; Benzin</option>
+            <option>Löhne</option>
+            <option>Versicherungen</option>
+            <option>Miete</option>
+            <option>Telefon &amp; Internet</option>
+            <option>Werkzeug &amp; Maschinen</option>
+            <option>Sonstiges</option>
+          </select>
+        </div>
+      </div>
+      <div class="fgrp"><label>Bemerkung</label><textarea id="x-bemerkung" style="min-height:60px;" placeholder="optional"></textarea></div>
+    </div>
+    <div class="br">
+      <button class="btn bto" id="x-del" style="color:#e53e3e;border-color:#fed7d7;display:none;" onclick="xLoeschen()">✕ Löschen</button>
+      <button class="btn btp" onclick="xSpeichern()">Ausgabe speichern</button>
+    </div>
+  </div>
+</div>
+
 <!-- EINSTELLUNGEN -->
 <div id="einstellungen" class="pg">
   <div class="ph"><div class="pt">Einstellungen</div></div>
@@ -658,7 +739,7 @@ async function supaFetch(path, opts){
 
 // Rote Warnleiste, solange etwas nicht in der Cloud gespeichert ist
 // Offene Aenderungen; Kunden/Abos zaehlen erst, wenn ihre Tabelle existiert
-function pendingZahl(){ return Object.keys(pendingGet()).filter(function(k){ var t=k.split('|')[0]; return !((t==='kunden'||t==='abos') && !EXTRA_OK[t]); }).length; }
+function pendingZahl(){ return Object.keys(pendingGet()).filter(function(k){ var t=k.split('|')[0]; return !(EXTRA_TABELLEN.indexOf(t)>=0 && !EXTRA_OK[t]); }).length; }
 function syncStatus(){
   var n=pendingZahl();
   var b=document.getElementById('sync-banner');
@@ -721,20 +802,27 @@ async function loadTable(table, localKey){
 
 // Kunden und Abos liegen in eigenen Tabellen. Fehlen diese (SQL noch nicht ausgefuehrt),
 // arbeitet die App mit den lokalen Daten weiter, ohne die rote Warnleiste.
-var EXTRA_OK={kunden:false, abos:false};
+var EXTRA_OK={kunden:false, abos:false, ausgaben:false};
+var EXTRA_TABELLEN=['kunden','abos','ausgaben'];
+// Gibt es die Spalte rechnungen.archiviert schon? (kommt mit dem SQL)
+var ARCHIV_OK=false;
+async function archivPruefen(){
+  try{ var r=await supaFetch('/rest/v1/rechnungen?select=archiviert&limit=1'); ARCHIV_OK=r.ok; }catch(e){ ARCHIV_OK=false; }
+}
 async function loadAll(){
-  var res=await Promise.all([loadTable('rechnungen','vol_r'), loadTable('offerten','vol_o'), loadTable('kunden','vol_k'), loadTable('abos','vol_a')]);
+  var res=await Promise.all([loadTable('rechnungen','vol_r'), loadTable('offerten','vol_o'), loadTable('kunden','vol_k'), loadTable('abos','vol_a'), loadTable('ausgaben','vol_x'), archivPruefen()]);
   RR=res[0].data; OO=res[1].data;
   LOAD_OK=res[0].ok && res[1].ok;
-  EXTRA_OK.kunden=res[2].ok; EXTRA_OK.abos=res[3].ok;
+  EXTRA_OK.kunden=res[2].ok; EXTRA_OK.abos=res[3].ok; EXTRA_OK.ausgaben=res[4].ok;
   if(res[2].ok || res[2].data.length) KK=res[2].data;
-  AA=res[3].data;
+  AA=res[3].data; XX=res[4].data;
   localStorage.setItem('vol_r',JSON.stringify(RR));
   localStorage.setItem('vol_o',JSON.stringify(OO));
   localStorage.setItem('vol_k',JSON.stringify(KK));
   localStorage.setItem('vol_a',JSON.stringify(AA));
+  localStorage.setItem('vol_x',JSON.stringify(XX));
 }
-function listeFuer(table){ return {rechnungen:RR, offerten:OO, kunden:KK, abos:AA}[table]||[]; }
+function listeFuer(table){ return {rechnungen:RR, offerten:OO, kunden:KK, abos:AA, ausgaben:XX}[table]||[]; }
 
 var _retrying=false, ADMIN_READY=false;
 async function retryPending(showResult){
@@ -744,7 +832,7 @@ async function retryPending(showResult){
     var p=pendingGet(), keys=Object.keys(p);
     for(var i=0;i<keys.length;i++){
       var k=keys[i], cut=k.indexOf('|'), table=k.slice(0,cut), id=k.slice(cut+1);
-      if((table==='kunden'||table==='abos') && !EXTRA_OK[table]) continue;
+      if(EXTRA_TABELLEN.indexOf(table)>=0 && !EXTRA_OK[table]) continue;
       if(p[k]==='delete'){ await supaDelete(table, id); continue; }
       var list=listeFuer(table);
       var rec=list.find(function(x){ return String(x.id)===id; });
@@ -808,6 +896,7 @@ function goTo(id, btn) {
   if(id==='anfragen') aRender();
   if(id==='kunden'){ kRenderList(); show('k-list'); hide('k-form'); }
   if(id==='abos') abZurueck();
+  if(id==='ausgaben') xZurueck();
 }
 
 // ============================================================
@@ -860,11 +949,36 @@ function datumKey(d){ var m=String(d||'').match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$
 function sortNachDatum(list){
   list.sort(function(a,b){ return (datumKey(b.datum)-datumKey(a.datum)) || String(b.id).localeCompare(String(a.id),undefined,{numeric:true}); });
 }
+// Archiv: alte Rechnungen bleiben gespeichert, stehen aber nicht mehr in der Hauptliste
+var R_ANSICHT='aktuell';
+function istArchiv(r){ return r.archiviert===true; }
+function rAnsicht(v){ R_ANSICHT=v; dRender(); }
+async function rArchivieren(r, wert){
+  if(!ARCHIV_OK){ alert('Das Archiv ist noch nicht mit der Datenbank verbunden.\nBitte zuerst das SQL in Supabase ausführen.'); return false; }
+  r.archiviert=wert; await sR(r); return true;
+}
+async function rAlleArchivieren(){
+  var akt=RR.filter(function(r){ return !istArchiv(r); });
+  if(!akt.length) return;
+  if(!ARCHIV_OK){ alert('Das Archiv ist noch nicht mit der Datenbank verbunden.\nBitte zuerst das SQL in Supabase ausführen.'); return; }
+  if(!confirm(akt.length+' Rechnungen ins Archiv verschieben?\n\nSie werden NICHT gelöscht. Du findest sie jederzeit unter „Archiv“ und kannst sie zurückholen.')) return;
+  for(var i=0;i<akt.length;i++){ akt[i].archiviert=true; await sR(akt[i]); }
+  dRender();
+}
 function dRender(){
   sortNachDatum(RR);
-  var offen=RR.filter(function(r){ return r.status==='offen'; });
+  var AKT=RR.filter(function(r){ return !istArchiv(r); }), ARCH=RR.filter(istArchiv);
+  var LISTE=(R_ANSICHT==='archiv')?ARCH:AKT;
+  el('rv-aktuell').className=R_ANSICHT==='aktuell'?'on':''; el('rv-archiv').className=R_ANSICHT==='archiv'?'on':'';
+  el('rv-aktuell').textContent='Aktuell ('+AKT.length+')'; el('rv-archiv').textContent='Archiv ('+ARCH.length+')';
+  el('r-alle-archiv').style.display=(R_ANSICHT==='aktuell' && AKT.length)?'':'none';
+  var archOffen=ARCH.filter(function(r){ return r.status==='offen'; });
+  var ai=el('r-archiv-info');
+  if(R_ANSICHT==='archiv'){ ai.style.display='block'; ai.textContent='Archivierte Rechnungen bleiben gespeichert. Öffne eine Rechnung und tippe auf „Aus Archiv holen“, um sie zurückzuholen.'+(archOffen.length?' Achtung: '+archOffen.length+' davon '+(archOffen.length===1?'ist':'sind')+' noch offen.':''); }
+  else ai.style.display='none';
+  var offen=AKT.filter(function(r){ return r.status==='offen'; });
   el('d-offen').textContent=offen.length;
-  var mVal=RR.reduce(function(s,r){return s+(r.status==='entwurf'?0:r.tot);},0).toLocaleString('de-CH',{maximumFractionDigits:0});
+  var mVal=AKT.reduce(function(s,r){return s+(r.status==='entwurf'?0:r.tot);},0).toLocaleString('de-CH',{maximumFractionDigits:0});
   var aVal=offen.reduce(function(s,r){return s+r.tot;},0).toLocaleString('de-CH',{maximumFractionDigits:0});
   el('d-monat').dataset.val=mVal; el('d-monat').textContent=umsatzVisible?mVal:'••••••';
   el('d-ausst').dataset.val=aVal; el('d-ausst').textContent=umsatzVisible?aVal:'••••••';
@@ -877,8 +991,8 @@ function dRender(){
       +entw.map(function(r){ return '<a href="#" onclick="rDetail(\''+escH(r.id)+'\');return false;" style="color:#1D4ED8;">'+escH(r.id)+'</a>'; }).join(', ');
   } else eb.style.display='none';
   var rrows='';
-  for(var ri=0;ri<RR.length;ri++){
-    var r=RR[ri];
+  for(var ri=0;ri<LISTE.length;ri++){
+    var r=LISTE[ri];
     rrows+='<tr>'
       +'<td class="inr" style="cursor:pointer" onclick="rDetail(this.dataset.id)" data-id="'+r.id+'">'+escH(r.id)+'</td>'
       +'<td style="cursor:pointer" onclick="rDetail(this.dataset.id)" data-id="'+r.id+'">'+escH(r.kunde)+'</td>'
@@ -892,7 +1006,7 @@ function dRender(){
       +'</td>'
       +'</tr>';
   }
-  el('d-rlist').innerHTML=rrows;
+  el('d-rlist').innerHTML=rrows||'<tr><td colspan="7" style="text-align:center;color:var(--tl);padding:2rem;">'+(R_ANSICHT==='archiv'?'Das Archiv ist leer.':'Noch keine aktuellen Rechnungen. Mit „Neue Rechnung“ legst du die erste an.')+'</td></tr>';
   // Hinweis-Banner: neue Anfragen
   var _anf=OO.filter(function(o){return o.status==='anfrage';});
   var _ban=document.getElementById('anfrage-banner');
@@ -1290,6 +1404,9 @@ function rDetail(id){
   fb.style.display=(r.status==='entwurf')?'':'none';
   fb.onclick=function(){ r.status='offen'; sR(r); hide('r-detail'); dRender(); };
   el('r-detail-edit').onclick=function(){ hide('r-detail'); rBearbeiten(id); };
+  var ab=el('r-detail-archiv');
+  ab.textContent=istArchiv(r)?'↩ Aus Archiv holen':'📦 Ins Archiv';
+  ab.onclick=async function(){ if(await rArchivieren(r, !istArchiv(r))){ hide('r-detail'); dRender(); } };
   var rows=(r.pos||[]).map(function(p){return '<tr><td style="font-size:15px;padding:12px 0;color:#1a1a1a;line-height:1.6;">'+escH(p.desc)+'</td><td style="font-size:15px;font-weight:500;text-align:right;padding:12px 0;white-space:nowrap;">CHF '+p.betrag.toLocaleString('de-CH',{minimumFractionDigits:2})+'</td></tr>';}).join('');
   el('r-detail-content').innerHTML=pvwH('Rechnung '+r.id,r.kunde,r.kontakt,r.strasse,r.plzort,r.objekt,r.datum,r.ausf||'','','',rows,r.sub,r.sub*0.081,r.tot,'Zahlbar innert 30 Tagen');
   el('r-detail-pdf').onclick=function(){pdfRechnung(id);};
@@ -1847,6 +1964,93 @@ async function abosAusfuehren(){
   }
   if(neu.length){ dRender(); if(el('abos').classList.contains('active')) abRender(); }
   return neu.length;
+}
+
+// ============================================================
+// AUSGABEN & UEBERBLICK
+// ============================================================
+var XX = JSON.parse(localStorage.getItem('vol_x')||'null') || [];
+var xEditId=null, X_ZEITRAUM='monat';
+
+// Liegt ein Datum (JJJJ-MM-TT) im gewaehlten Zeitraum?
+function imZeitraum(iso){
+  if(!iso) return false;
+  if(X_ZEITRAUM==='alles') return true;
+  var h=td();
+  if(X_ZEITRAUM==='jahr') return iso.slice(0,4)===h.slice(0,4);
+  if(X_ZEITRAUM==='monat') return iso.slice(0,7)===h.slice(0,7);
+  return iso.slice(0,7)===plusMonate(h.slice(0,7)+'-01',-1).slice(0,7);
+}
+function xZeitraum(z){ X_ZEITRAUM=z; xRender(); }
+function geld(n){ return (Math.round(n*100)/100).toLocaleString('de-CH',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function xRender(){
+  document.querySelectorAll('#x-list .seg button').forEach(function(b){ b.className=b.dataset.z===X_ZEITRAUM?'on':''; });
+  el('x-hinweis').innerHTML=EXTRA_OK.ausgaben?'':'<div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:13px 16px;margin-bottom:1.25rem;color:#92400E;font-size:14px;">⚠ Ausgaben sind noch nicht mit der Cloud verbunden und werden nur auf diesem Gerät gespeichert.</div>';
+  // Einnahmen: alle Rechnungen ausser Entwuerfen, auch archivierte
+  var ein=RR.filter(function(r){ return r.status!=='entwurf' && imZeitraum(isoAusDatum(r.datum)); })
+            .reduce(function(s,r){ return s+(Number(r.sub)||0); },0);
+  var liste=XX.filter(function(x){ return imZeitraum(x.datum); })
+              .sort(function(a,b){ return String(b.datum).localeCompare(String(a.datum)); });
+  var aus=liste.reduce(function(s,x){ return s+(Number(x.betrag)||0); },0);
+  var erg=ein-aus;
+  el('x-ein').textContent=geld(ein); el('x-aus').textContent=geld(aus);
+  el('x-erg').textContent=(erg<0?'– ':'')+geld(Math.abs(erg));
+  el('x-erg-box').style.background=erg<0?'#991B1B':'var(--gm)';
+  // Summe je Kategorie als Balken
+  var kat={}; liste.forEach(function(x){ var k=x.kategorie||'Sonstiges'; kat[k]=(kat[k]||0)+(Number(x.betrag)||0); });
+  var keys=Object.keys(kat).sort(function(a,b){ return kat[b]-kat[a]; });
+  el('x-kat-card').style.display=keys.length?'':'none';
+  el('x-kat').innerHTML=keys.map(function(k){
+    var pct=aus?Math.round(kat[k]/aus*100):0;
+    return '<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;"><span>'+escH(k)+'</span><span style="font-weight:500;">CHF '+geld(kat[k])+' <span style="color:var(--tl);font-weight:400;">('+pct+'%)</span></span></div>'
+      +'<div style="background:#f0f5f0;border-radius:4px;height:8px;"><div style="background:#C2410C;height:8px;border-radius:4px;width:'+pct+'%;"></div></div></div>';
+  }).join('');
+  el('x-tbl').innerHTML=liste.length ? liste.map(function(x){
+    return '<tr data-id="'+escH(x.id)+'">'
+      +zelle(fd(x.datum),'color:var(--tl);white-space:nowrap;','xBearbeiten')
+      +zelle(escH(x.beschreibung),'font-weight:500;','xBearbeiten')
+      +zelle(escH(x.kategorie),'color:var(--tm);font-size:13px;','xBearbeiten')
+      +zelle('CHF '+geld(Number(x.betrag)||0),'font-weight:500;white-space:nowrap;','xBearbeiten')
+      +'<td><button class="btd" onclick="xBearbeiten(this.closest(\'tr\').dataset.id)">✎</button></td>'
+      +'</tr>';
+  }).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--tl);padding:2rem;">Keine Ausgaben in diesem Zeitraum.</td></tr>';
+}
+function xZurueck(){ show('x-list'); hide('x-form'); xRender(); }
+function xBearbeiten(id){
+  var x=id?XX.find(function(a){return a.id===id;}):null;
+  xEditId=x?x.id:null;
+  hide('x-list'); show('x-form');
+  el('x-datum').value=x?x.datum:td();
+  el('x-betrag').value=x?String(x.betrag):'';
+  el('x-beschreibung').value=x?(x.beschreibung||''):'';
+  el('x-kategorie').value=x?(x.kategorie||'Sonstiges'):'Material & Reinigungsmittel';
+  el('x-bemerkung').value=x?(x.bemerkung||''):'';
+  el('x-titel').textContent=x?'Ausgabe bearbeiten':'Neue Ausgabe';
+  el('x-del').style.display=x?'':'none';
+  window.scrollTo(0,0);
+}
+function xSpeichern(){
+  var betrag=parseFloat((el('x-betrag').value||'').replace(/'/g,'').replace(',','.'));
+  var beschr=el('x-beschreibung').value.trim(), datum=el('x-datum').value;
+  if(!datum){ alert('Bitte Datum wählen.'); return; }
+  if(!beschr){ alert('Bitte eingeben, was gekauft oder bezahlt wurde.'); return; }
+  if(!betrag||betrag<=0){ alert('Bitte Betrag eingeben.'); return; }
+  var x=xEditId?XX.find(function(a){return a.id===xEditId;}):null;
+  if(!x){ x={id:'x'+Date.now()}; XX.push(x); }
+  x.datum=datum; x.betrag=betrag; x.beschreibung=beschr;
+  x.kategorie=el('x-kategorie').value; x.bemerkung=el('x-bemerkung').value.trim();
+  localStorage.setItem('vol_x',JSON.stringify(XX));
+  supaUpsert('ausgaben', x).then(syncStatus);
+  xZurueck();
+}
+function xLoeschen(){
+  var x=XX.find(function(a){return a.id===xEditId;}); if(!x) return;
+  if(!confirm('Ausgabe „'+x.beschreibung+'“ löschen?')) return;
+  XX=XX.filter(function(a){return a.id!==x.id;});
+  localStorage.setItem('vol_x',JSON.stringify(XX));
+  supaDelete('ausgaben', x.id).then(syncStatus);
+  xZurueck();
 }
 
 // ============================================================
