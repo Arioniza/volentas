@@ -94,6 +94,24 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
 .seg{display:inline-flex;background:#eef4ee;border-radius:8px;padding:3px;gap:2px;}
 .seg button{border:none;background:transparent;padding:6px 14px;border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--tm);cursor:pointer;}
 .seg button.on{background:#fff;color:var(--gd);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.ki-btn{margin-top:6px;align-self:flex-start;background:#F5F3FF;color:#5B21B6;border:1px solid #DDD6FE;border-radius:8px;padding:5px 12px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.ki-btn:hover{background:#EDE9FE;}.ki-btn:disabled{opacity:.6;cursor:wait;}
+#ki-fab{position:fixed;right:20px;bottom:20px;z-index:900;background:#5B21B6;color:#fff;border:none;border-radius:28px;padding:12px 18px;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;box-shadow:0 4px 16px rgba(91,33,182,.35);}
+#ki-chat{position:fixed;right:20px;bottom:76px;z-index:901;width:380px;max-width:calc(100vw - 24px);height:520px;max-height:calc(100vh - 110px);background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden;}
+#ki-chat .ki-kopf{background:#5B21B6;color:#fff;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;font-weight:500;}
+#ki-chat .ki-kopf button{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:6px;padding:4px 9px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;margin-left:6px;}
+#ki-verlauf{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#FAFAFB;}
+.ki-leer{color:var(--tl);font-size:13px;line-height:1.7;text-align:center;margin:auto 0;}
+.ki-msg{max-width:88%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-wrap:break-word;}
+.ki-ich{align-self:flex-end;background:#5B21B6;color:#fff;}
+.ki-er{align-self:flex-start;background:#fff;border:1px solid #E5E7EB;color:var(--td);}
+.ki-warten{color:var(--tl);font-style:italic;}
+.ki-fehler{align-self:stretch;background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;}
+.ki-kopie{display:block;margin-top:6px;background:transparent;border:1px solid #DDD6FE;color:#5B21B6;border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+#ki-chat .ki-fuss{display:flex;gap:6px;padding:10px;border-top:1px solid #eee;}
+#ki-eingabe{flex:1;border:1px solid #DDD6FE;border-radius:8px;padding:8px 10px;font-size:14px;font-family:'DM Sans',sans-serif;resize:none;height:44px;}
+#ki-modal{position:fixed;inset:0;z-index:1100;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;}
+@media(max-width:700px){ #ki-fab{right:12px;bottom:12px;padding:11px 14px;} #ki-chat{right:12px;bottom:66px;height:calc(100vh - 130px);} }
 .smiley-btn{background:transparent;border:2px solid #e0e0e0;border-radius:12px;padding:12px 20px;font-size:28px;cursor:pointer;transition:all .15s;text-align:center;line-height:1;}
 .smiley-btn:hover{border-color:#A5D6A7;background:#E8F5E9;}
 .smiley-btn.active{border-color:#1B6B3A;background:#E8F5E9;transform:scale(1.1);}
@@ -612,6 +630,25 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f4;color:var(--td);min-hei
   </div>
 </div>
 
+</div>
+
+<!-- TEXT-ASSISTENT -->
+<button id="ki-fab" style="display:none;" onclick="kiChatAuf()">✨ Assistent</button>
+<div id="ki-chat">
+  <div class="ki-kopf"><span>✨ Text-Assistent</span><span><button onclick="kiNeu()">Neu</button><button onclick="kiChatAuf()" aria-label="Schliessen">✕</button></span></div>
+  <div id="ki-verlauf"></div>
+  <div class="ki-fuss">
+    <textarea id="ki-eingabe" placeholder="Was soll ich schreiben?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();kiSenden();}"></textarea>
+    <button class="btn btp" style="padding:8px 14px;background:#5B21B6;" onclick="kiSenden()">Senden</button>
+  </div>
+</div>
+<div id="ki-modal" onclick="if(event.target===this)kiSchliessen()">
+  <div style="background:#fff;border-radius:12px;max-width:640px;width:100%;padding:1.25rem 1.5rem;max-height:90vh;overflow-y:auto;">
+    <div style="font-weight:500;font-size:17px;margin-bottom:1rem;color:#5B21B6;">✨ Verbesserter Text</div>
+    <div class="fgrp" style="margin-bottom:.75rem;"><label>Vorher</label><div id="ki-alt" style="white-space:pre-wrap;font-size:14px;color:var(--tm);background:#f7f7f8;border-radius:8px;padding:9px 13px;"></div></div>
+    <div class="fgrp"><label>Nachher (du kannst noch anpassen)</label><textarea id="ki-neu" style="min-height:120px;"></textarea></div>
+    <div class="br"><button class="btn bto" onclick="kiSchliessen()">Verwerfen</button><button class="btn btp" style="background:#5B21B6;" onclick="kiUebernehmen()">✓ Übernehmen</button></div>
+  </div>
 </div>
 
 <script>
@@ -2054,6 +2091,98 @@ function xLoeschen(){
 }
 
 // ============================================================
+// TEXT-ASSISTENT (Claude ueber die Supabase-Funktion "assistent")
+// ============================================================
+var KI_FELDER={'r-leistung':'Rechnung – Beschreibung der Arbeiten','r-bemerk':'Rechnung – Bemerkungen',
+  'o-leistung':'Offerte – Beschreibung der Arbeiten','o-bemerk':'Offerte – Bemerkungen',
+  'ab-leistung':'Abo – Beschreibung der Arbeiten','x-bemerkung':'Ausgabe – Bemerkung'};
+
+async function kiAnfrage(daten){
+  var r;
+  try{
+    r=await supaFetch('/functions/v1/assistent',{method:'POST',body:JSON.stringify(daten)});
+  }catch(e){ throw new Error('Keine Verbindung. Bitte Internet prüfen.'); }
+  var j={}; try{ j=await r.json(); }catch(e){}
+  if(r.status===404) throw new Error('Der Assistent ist noch nicht eingerichtet (Funktion „assistent“ fehlt in Supabase).');
+  if(!r.ok) throw new Error(j.fehler||('Fehler '+r.status));
+  return j.text||'';
+}
+
+// Knopf "Text verbessern" unter jedes passende Textfeld setzen
+function kiKnoepfe(){
+  Object.keys(KI_FELDER).forEach(function(id){
+    var ta=el(id); if(!ta || el('ki-btn-'+id)) return;
+    var b=document.createElement('button');
+    b.type='button'; b.id='ki-btn-'+id; b.className='ki-btn'; b.textContent='✨ Text verbessern';
+    b.onclick=function(){ kiVerbessern(id); };
+    ta.insertAdjacentElement('afterend', b);
+  });
+}
+
+var _kiFeld=null;
+async function kiVerbessern(id){
+  var ta=el(id), text=ta.value.trim(), b=el('ki-btn-'+id);
+  if(!text){ alert('Schreib zuerst etwas ins Feld, dann kann der Assistent es verbessern.'); return; }
+  b.disabled=true; b.textContent='✨ Wird verbessert…';
+  try{
+    var neu=await kiAnfrage({modus:'verbessern', feld:KI_FELDER[id], text:text});
+    _kiFeld=id;
+    el('ki-alt').textContent=text; el('ki-neu').value=neu;
+    el('ki-modal').style.display='flex';
+  }catch(e){ alert('⚠ '+e.message); }
+  finally{ b.disabled=false; b.textContent='✨ Text verbessern'; }
+}
+function kiUebernehmen(){
+  if(_kiFeld){ var ta=el(_kiFeld); ta.value=el('ki-neu').value; ta.dispatchEvent(new Event('input')); }
+  kiSchliessen();
+}
+function kiSchliessen(){ el('ki-modal').style.display='none'; _kiFeld=null; }
+
+// Chat-Fenster
+var KI_VERLAUF=[];
+function kiChatAuf(){ var p=el('ki-chat'); p.style.display=(p.style.display==='flex')?'none':'flex'; if(p.style.display==='flex') el('ki-eingabe').focus(); }
+function kiChatRender(){
+  var box=el('ki-verlauf');
+  if(!KI_VERLAUF.length){
+    box.innerHTML='<div class="ki-leer">Frag mich zum Beispiel:<br>„Schreib eine freundliche Mail an Thomas wegen der offenen Rechnung“<br>„Formuliere: fenster gereinigt innen aussen“</div>';
+    return;
+  }
+  box.innerHTML=KI_VERLAUF.map(function(m,i){
+    if(m.rolle==='nutzer') return '<div class="ki-msg ki-ich">'+escH(m.text)+'</div>';
+    if(m.rolle==='fehler') return '<div class="ki-msg ki-fehler">⚠ '+escH(m.text)+'</div>';
+    if(m.rolle==='warten') return '<div class="ki-msg ki-er ki-warten">schreibt…</div>';
+    return '<div class="ki-msg ki-er">'+escH(m.text)+'<button class="ki-kopie" onclick="kiKopieren('+i+',this)">Kopieren</button></div>';
+  }).join('');
+  box.scrollTop=box.scrollHeight;
+}
+async function kiSenden(){
+  var inp=el('ki-eingabe'), text=inp.value.trim();
+  if(!text || KI_VERLAUF.some(function(m){return m.rolle==='warten';})) return;
+  inp.value='';
+  KI_VERLAUF=KI_VERLAUF.filter(function(m){return m.rolle!=='fehler';});
+  KI_VERLAUF.push({rolle:'nutzer',text:text},{rolle:'warten',text:''});
+  kiChatRender();
+  var verlauf=KI_VERLAUF.filter(function(m){return m.rolle==='nutzer'||m.rolle==='assistent';});
+  try{
+    var a=await kiAnfrage({modus:'chat', verlauf:verlauf});
+    KI_VERLAUF=KI_VERLAUF.filter(function(m){return m.rolle!=='warten';});
+    KI_VERLAUF.push({rolle:'assistent',text:a});
+  }catch(e){
+    // Frage wieder ins Feld, damit man es erneut senden kann
+    KI_VERLAUF=KI_VERLAUF.filter(function(m){return m.rolle!=='warten';});
+    KI_VERLAUF.pop(); inp.value=text;
+    KI_VERLAUF.push({rolle:'fehler',text:e.message});
+  }
+  kiChatRender();
+}
+function kiKopieren(i,btn){
+  var t=KI_VERLAUF[i]&&KI_VERLAUF[i].text; if(!t) return;
+  navigator.clipboard.writeText(t).then(function(){ btn.textContent='✓ Kopiert'; setTimeout(function(){btn.textContent='Kopieren';},1500); })
+    .catch(function(){ alert('Kopieren ging nicht. Bitte den Text markieren und kopieren.'); });
+}
+function kiNeu(){ KI_VERLAUF=[]; kiChatRender(); }
+
+// ============================================================
 // INIT
 // ============================================================
 el('r-datum').value=td();
@@ -2063,6 +2192,7 @@ async function migrateAndLoad(){
   // Laden; lokale Eintraege, die nie in der Cloud ankamen, werden dabei zum Nachliefern vorgemerkt
   await loadAll();
   ADMIN_READY=true;
+  el('ki-fab').style.display=''; kiKnoepfe(); kiChatRender();
   dRender();
   kFillDropdowns();
   await retryPending();
